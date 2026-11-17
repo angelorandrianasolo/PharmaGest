@@ -12,7 +12,7 @@ Fonctionnalités principales :
 - caisse avec ventes atomiques, paiements espèces ou mobile money, retours compensatoires et annulations tracées ;
 - tableau de bord, alertes de rupture/péremption et documents **PDF ReportLab** ;
 - rôles et permissions, journal d'audit, sauvegarde/restauration ;
-- jeu de données fictives et 34 tests automatisés.
+- jeu de données fictives et 46 tests automatisés.
 
 ---
 
@@ -64,7 +64,7 @@ Mot de passe unique : **`pharma123`** (à changer impérativement hors démonstr
 # Vérification du projet
 docker compose run --rm web python manage.py check
 
-# Tests automatisés (34 tests)
+# Tests automatisés (46 tests)
 docker compose run --rm web python manage.py test
 
 # Contrôle de cohérence stock <> mouvements
@@ -96,11 +96,13 @@ ventes/            caisse, paiements, retours, annulations
 rapports/          tableau de bord et PDF ReportLab
 templates/         interface en français (identité « Ordonnance »)
 static/css/        système de design (variables, typographie, animations)
-static/images/     logo, maquettes du cahier et visuels médicaments de démonstration
+static/images/     logo, hero original, visuels médicaments et maquettes du cahier
 media/             photos téléversées (volume Docker)
 backups/           sauvegardes locales (ignorées par Git)
 tests/             suite de tests Django
 docs/              conception, décisions, guide utilisateur
+docker-compose.prod.yml  configuration Docker de production (autonome)
+deploy/Caddyfile         reverse proxy HTTPS, certificats et médias
 ```
 
 ## 5. Configuration
@@ -113,7 +115,63 @@ En production : générer une vraie `SECRET_KEY`, passer `DEBUG=false`, activer
 `SECURE_SSL_REDIRECT=true` derrière un proxy HTTPS, restreindre `ALLOWED_HOSTS` et
 renseigner `CSRF_TRUSTED_ORIGINS`.
 
-## 6. Sécurité et exploitation réelle
+Le modèle dédié est `.env.prod.example` : le copier vers `.env.prod` puis renseigner toutes
+les valeurs. Ce fichier sert à la fois à la substitution des variables par Docker Compose
+(option `--env-file` utilisée par les cibles `prod-*`) et à l'environnement du conteneur
+Django. Il n'est jamais versionné.
+
+## 6. Déploiement de production
+
+La configuration de production est **autonome** : `docker-compose.prod.yml` ne surcharge pas
+le fichier de développement, ne monte pas le code source de l'hôte et n'expose pas le port
+8000. Gunicorn sert Django sur le réseau interne et Caddy (profil `tls`) termine le HTTPS.
+
+1. Copier le modèle d'environnement et adapter toutes les valeurs :
+
+   ```bash
+   cp .env.prod.example .env.prod
+   ```
+
+   Renseigner au minimum `SECRET_KEY`, `ALLOWED_HOSTS`, `CSRF_TRUSTED_ORIGINS` (en `https://`),
+   `PHARMAGEST_DOMAIN` et `POSTGRES_PASSWORD`.
+
+2. Générer une clé secrète unique et la coller dans `.env.prod` (variable `SECRET_KEY`) :
+
+   ```bash
+   python -c "import secrets; print(secrets.token_urlsafe(50))"
+   ```
+
+3. Construire l'image puis démarrer la pile avec le reverse proxy :
+
+   ```bash
+   make prod-build
+   make prod-up
+   ```
+
+   `prod-up` active le profil `tls` : Caddy écoute sur les ports 80 et 443, obtient un
+   certificat **Let's Encrypt** pour `PHARMAGEST_DOMAIN` et le renouvelle automatiquement.
+
+4. Faire pointer le DNS de `PHARMAGEST_DOMAIN` vers l'adresse IP du serveur et ouvrir les
+   ports 80 et 443. La délivrance du certificat nécessite un domaine accessible depuis
+   Internet.
+
+5. Les photos téléversées sont écrites dans le volume `media_data`, monté en lecture seule
+   dans Caddy : `/media/*` est servi directement par le reverse proxy, sans passer par Django.
+
+6. Sauvegarder régulièrement les volumes nommés `postgres_data`, `media_data`, `caddy_data`
+   et `caddy_config`. Par exemple, pour la base :
+
+   ```bash
+   docker compose --env-file .env.prod -f docker-compose.prod.yml exec db \
+     pg_dump -U pharmagest pharmagest > sauvegarde.sql
+   ```
+
+   Une sauvegarde applicative est aussi disponible via
+   `docker compose --env-file .env.prod -f docker-compose.prod.yml run --rm web python manage.py sauvegarder`.
+
+La pile s'arrête avec `make prod-down` et se surveille avec `make prod-logs`.
+
+## 7. Sécurité et exploitation réelle
 
 - CSRF activé sur tous les formulaires ; permissions vérifiées dans chaque vue.
 - Validation serveur des prix et quantités (formulaires + contraintes PostgreSQL).
@@ -128,22 +186,27 @@ renseigner `CSRF_TRUSTED_ORIGINS`.
 > conservation des documents, données personnelles, fiscalité) doivent être vérifiées par un
 > professionnel avant toute exploitation réelle. Voir `docs/DECISIONS.md`.
 
-## 7. Documentation
+## 8. Documentation
 
 - `docs/CONCEPTION.md` : MCD, MLD, diagrammes d'états et de séquence, matrice des rôles.
 - `docs/DECISIONS.md` : choix techniques et limites assumées.
 - `docs/GUIDE_UTILISATION.md` : parcours utilisateur pas à pas.
 
-## 8. Interface et visuels
+## 9. Interface et visuels
 
 L'interface adopte une direction « ordonnance » : vert profond et ambre sur un fond de
 papeterie chaude, typographie éditoriale (Fraunces + DM Sans), barre latérale, cartes aérées
 et animations d'entrée discrètes. Le CSS est centralisé dans `static/css/app.css` via des
 variables CSS ; Bootstrap reste utilisé pour la grille et les formulaires.
 
-Les images fournies dans le cahier des charges ont été extraites du PDF et versionnées dans
-`static/images/maquettes/` : bannière de couverture, aperçu général, tableau de bord,
-catalogue des médicaments, caisse, stocks et graphiques. Elles servent de références visuelles
-sur l'accueil et sur l'écran de connexion. Les illustrations de `static/images/medicaments/`
-sont des visuels de démonstration : dès qu'une photo réelle est téléversée sur un médicament,
-c'est elle qui est affichée.
+L'accueil affiche des **données réelles** : indicateurs de la journée (ventes, chiffre
+d'affaires, réceptions, alertes), dernières ventes, lots proches de la péremption et paiements
+en attente, le tout filtré selon les permissions de l'utilisateur. Son illustration
+(`static/images/hero-pharmacie.svg`) est un visuel original représentant la traçabilité des
+lots et les indicateurs ; elle remplace l'ancien bloc « Références visuelles du cahier des
+charges » qui se trouvait à côté des alertes de stock.
+
+Les maquettes extraites du cahier restent archivées dans `static/images/maquettes/` comme
+références de conception ; l'une d'elles est utilisée sur l'écran de connexion. Les
+illustrations de `static/images/medicaments/` sont des visuels de démonstration : dès qu'une
+photo réelle est téléversée sur un médicament, c'est elle qui est affichée.

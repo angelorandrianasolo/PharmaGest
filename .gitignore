@@ -16,6 +16,7 @@ db.sqlite3-journal
 
 # Environnement
 .env
+.env.prod
 
 # Éditeurs
 .idea/

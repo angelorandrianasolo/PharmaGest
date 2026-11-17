@@ -1,8 +1,9 @@
 .DEFAULT_GOAL := help
 
-.PHONY: help build up down logs check test seed roles verify backup shell
+.PHONY: help build up down logs check test seed roles verify backup shell prod-build prod-up prod-down prod-logs
 
 RUN = docker compose run --rm web
+PROD = docker compose --env-file .env.prod -f docker-compose.prod.yml
 
 help: ## Affiche les commandes disponibles
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-12s %s\n", $$1, $$2}'
@@ -42,3 +43,15 @@ backup: ## Crée une sauvegarde horodatée
 
 shell: ## Ouvre un shell Django
 	$(RUN) python manage.py shell
+
+prod-build: ## Construit l'image web de production
+	$(PROD) build
+
+prod-up: ## Démarre la production avec Caddy (profil tls)
+	$(PROD) --profile tls up -d
+
+prod-down: ## Arrête les conteneurs de production
+	$(PROD) down
+
+prod-logs: ## Affiche les logs de production
+	$(PROD) logs -f

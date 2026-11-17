@@ -1,0 +1,67 @@
+# Configuration de PRODUCTION autonome : ce fichier ne surcharge pas docker-compose.yml.
+# Les variables ${...} sont résolues depuis .env.prod via l'option --env-file des cibles
+# Makefile `prod-*`. Aucun code source de l'hôte n'est monté dans le conteneur web.
+name: pharmagest-prod
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-pharmagest}
+      POSTGRES_USER: ${POSTGRES_USER:-pharmagest}
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?Le mot de passe PostgreSQL est obligatoire (voir .env.prod)}"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-pharmagest} -d ${POSTGRES_DB:-pharmagest}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  web:
+    build: .
+    restart: unless-stopped
+    env_file: .env.prod
+    environment:
+      SECRET_KEY: "${SECRET_KEY:?La clé secrète Django est obligatoire (voir .env.prod)}"
+      DEBUG: "false"
+      ALLOWED_HOSTS: "${ALLOWED_HOSTS:?ALLOWED_HOSTS est obligatoire (voir .env.prod)}"
+      CSRF_TRUSTED_ORIGINS: "${CSRF_TRUSTED_ORIGINS:?CSRF_TRUSTED_ORIGINS est obligatoire (voir .env.prod)}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?Le mot de passe PostgreSQL est obligatoire (voir .env.prod)}"
+      SECURE_SSL_REDIRECT: "true"
+      DJANGO_ENV_FILE: .env.prod
+      DATABASE_URL: "postgresql://${POSTGRES_USER:-pharmagest}:${POSTGRES_PASSWORD:?Le mot de passe PostgreSQL est obligatoire (voir .env.prod)}@db:5432/${POSTGRES_DB:-pharmagest}"
+    volumes:
+      - media_data:/app/media
+    depends_on:
+      db:
+        condition: service_healthy
+    # Le port 8000 n'est pas exposé : seul Caddy (profil tls) est public.
+    command: >
+      sh -c "python manage.py migrate --noinput &&
+             python manage.py collectstatic --noinput &&
+             gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 3 --access-logfile - --error-logfile -"
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    profiles: ["tls"]
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro,z
+      - media_data:/srv/media:ro,z
+      - caddy_data:/data
+      - caddy_config:/config
+    environment:
+      PHARMAGEST_DOMAIN: "${PHARMAGEST_DOMAIN:?Le domaine public est obligatoire (voir .env.prod)}"
+    depends_on:
+      - web
+
+volumes:
+  postgres_data:
+  media_data:
+  caddy_data:
+  caddy_config:

@@ -4,21 +4,45 @@ Toutes les valeurs sensibles ou dépendantes de l'environnement sont lues
 depuis les variables d'environnement (voir `.env.example`).
 """
 
+import os
 from pathlib import Path
 
 import environ
+from django.core.exceptions import ImproperlyConfigured
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 env = environ.Env()
-env.read_env(BASE_DIR / ".env")
+# En production on utilise `.env.prod` (voir docker-compose.prod.yml) plutôt
+# que le fichier de développement ; les variables d'environnement du
+# conteneur restent prioritaires sur le contenu du fichier.
+env.read_env(BASE_DIR / os.environ.get("DJANGO_ENV_FILE", ".env"))
 
-SECRET_KEY = env("SECRET_KEY", default="development-only-key-change-me")
 DEBUG = env.bool("DEBUG", default=True)
+SECRET_KEY = env("SECRET_KEY", default="development-only-key-change-me")
 ALLOWED_HOSTS = env.list(
-    "ALLOWED_HOSTS", default=["localhost", "127.0.0.1", "0.0.0.0", "web"]
+    "ALLOWED_HOSTS",
+    default=["localhost", "127.0.0.1", "0.0.0.0", "web"] if DEBUG else [],
 )
 CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[])
+if not DEBUG:
+    # Refuser de démarrer en production avec la configuration de développement.
+    if (
+        SECRET_KEY == "development-only-key-change-me"
+        or "remplacez" in SECRET_KEY.lower()
+        or len(SECRET_KEY) < 40
+    ):
+        raise ImproperlyConfigured(
+            "SECRET_KEY doit être remplacée par une valeur secrète d'au moins 40 caractères."
+        )
+    if not ALLOWED_HOSTS or "*" in ALLOWED_HOSTS:
+        raise ImproperlyConfigured(
+            "ALLOWED_HOSTS doit contenir les noms d'hôte autorisés en production."
+        )
+    if not CSRF_TRUSTED_ORIGINS:
+        raise ImproperlyConfigured(
+            "CSRF_TRUSTED_ORIGINS doit contenir l'origine HTTPS en production."
+        )
 
 INSTALLED_APPS = [
     "django.contrib.admin",
