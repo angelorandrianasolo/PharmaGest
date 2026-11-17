@@ -8,6 +8,7 @@ from django.urls import reverse_lazy
 from django.views import View
 from django.views.generic import FormView, ListView
 
+from core.mixins import AnyPermissionRequiredMixin
 from core.utils import journaliser
 
 from .forms import CorrectionStockForm
@@ -15,7 +16,8 @@ from .models import LotStock, MouvementStock
 from .services import corriger_quantite
 
 
-class LotStockListView(ListView):
+class LotStockListView(AnyPermissionRequiredMixin, ListView):
+    permission_required = ('stock.view_lotstock', 'stock.view_mouvementstock')
     model = LotStock
     template_name = 'stock/lotstock_list.html'
     context_object_name = 'lots'
@@ -36,7 +38,8 @@ class LotStockListView(ListView):
         return queryset.order_by('date_peremption', 'id')
 
 
-class MouvementStockListView(ListView):
+class MouvementStockListView(AnyPermissionRequiredMixin, ListView):
+    permission_required = ('stock.view_lotstock', 'stock.view_mouvementstock')
     model = MouvementStock
     template_name = 'stock/mouvementstock_list.html'
     context_object_name = 'mouvements'

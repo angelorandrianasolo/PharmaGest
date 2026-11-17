@@ -20,7 +20,8 @@ from .forms import CategorieForm, MedicamentForm
 from .models import Categorie, Medicament
 
 
-class MedicamentListView(ListView):
+class MedicamentListView(PermissionRequiredMixin, ListView):
+    permission_required = "medicaments.view_medicament"
     model = Medicament
     template_name = "medicaments/medicament_list.html"
     context_object_name = "medicaments"
@@ -50,7 +51,8 @@ class MedicamentListView(ListView):
         return context
 
 
-class MedicamentDetailView(DetailView):
+class MedicamentDetailView(PermissionRequiredMixin, DetailView):
+    permission_required = "medicaments.view_medicament"
     model = Medicament
     template_name = "medicaments/medicament_detail.html"
     context_object_name = "medicament"
@@ -100,7 +102,8 @@ class BasculerArchivageView(PermissionRequiredMixin, View):
         return redirect("medicaments:detail", pk=medicament.pk)
 
 
-class CategorieListView(ListView):
+class CategorieListView(PermissionRequiredMixin, ListView):
+    permission_required = "medicaments.view_categorie"
     model = Categorie
     template_name = "medicaments/categorie_list.html"
     context_object_name = "categories"
@@ -130,9 +133,10 @@ class CategorieUpdateView(PermissionRequiredMixin, UpdateView):
     permission_required = "medicaments.change_categorie"
 
 
-class ApercuStockView(TemplateView):
+class ApercuStockView(PermissionRequiredMixin, TemplateView):
     """Petit récapitulatif des alertes, intégré à l'accueil."""
 
+    permission_required = "medicaments.view_medicament"
     template_name = "medicaments/apercu_stock.html"
 
     def get_context_data(self, **kwargs):

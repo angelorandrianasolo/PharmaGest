@@ -11,14 +11,16 @@ from .models import CommandeAchat, LigneReception
 from .services import annuler_commande, creer_commande, receptionner_commande, valider_commande
 
 
-class CommandeListView(ListView):
+class CommandeListView(PermissionRequiredMixin, ListView):
+    permission_required = 'achats.view_commandeachat'
     model = CommandeAchat
     template_name = 'achats/commande_list.html'
     context_object_name = 'commandes'
     paginate_by = 20
 
 
-class CommandeDetailView(DetailView):
+class CommandeDetailView(PermissionRequiredMixin, DetailView):
+    permission_required = 'achats.view_commandeachat'
     model = CommandeAchat
     template_name = 'achats/commande_detail.html'
     context_object_name = 'commande'

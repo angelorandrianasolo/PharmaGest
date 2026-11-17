@@ -13,7 +13,8 @@ from .forms import FournisseurForm
 from .models import Fournisseur
 
 
-class FournisseurListView(ListView):
+class FournisseurListView(PermissionRequiredMixin, ListView):
+    permission_required = "fournisseurs.view_fournisseur"
     model = Fournisseur
     template_name = "fournisseurs/fournisseur_list.html"
     context_object_name = "fournisseurs"
@@ -29,7 +30,8 @@ class FournisseurListView(ListView):
         return queryset.order_by("nom")
 
 
-class FournisseurDetailView(DetailView):
+class FournisseurDetailView(PermissionRequiredMixin, DetailView):
+    permission_required = "fournisseurs.view_fournisseur"
     model = Fournisseur
     template_name = "fournisseurs/fournisseur_detail.html"
     context_object_name = "fournisseur"

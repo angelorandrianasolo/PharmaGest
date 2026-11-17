@@ -58,3 +58,49 @@ class RolesTests(BaseTestCase):
         response = self.client.get(reverse('home'))
         self.assertEqual(response.status_code, 302)
         self.assertIn(reverse('utilisateurs:login'), response['Location'])
+
+
+class LecturePermissionsTests(BaseTestCase):
+    """RG11 : les consultations sont protégées comme les écritures."""
+
+    def setUp(self):
+        self.caissier = Fabrique.utilisateur('caissier-lecture', 'caissier')
+        self.client.force_login(self.caissier)
+
+    def test_caissier_peut_consulter_ventes_clients_et_catalogue(self):
+        for route in ('ventes:liste', 'clients:liste', 'medicaments:liste'):
+            with self.subTest(route=route):
+                self.assertEqual(self.client.get(reverse(route)).status_code, 200)
+
+    def test_caissier_ne_peut_pas_consulter_les_modules_interdits(self):
+        for route in (
+            'fournisseurs:liste',
+            'achats:liste',
+            'stock:lots',
+            'stock:mouvements',
+            'rapports:dashboard',
+        ):
+            with self.subTest(route=route):
+                self.assertEqual(self.client.get(reverse(route)).status_code, 403)
+
+    def test_fiche_client_est_protegee(self):
+        client = Fabrique.client(nom='Client confidentiel')
+        self.assertEqual(
+            self.client.get(reverse('clients:detail', args=[client.pk])).status_code, 200
+        )
+        pharmacien = Fabrique.utilisateur('pharmacien-lecture', 'pharmacien')
+        self.client.force_login(pharmacien)
+        self.assertEqual(
+            self.client.get(reverse('clients:detail', args=[client.pk])).status_code, 403
+        )
+
+    def test_lecture_anonyme_redirige_vers_connexion(self):
+        self.client.logout()
+        for route in (
+            'ventes:liste', 'clients:liste', 'medicaments:liste',
+            'fournisseurs:liste', 'stock:lots',
+        ):
+            with self.subTest(route=route):
+                reponse = self.client.get(reverse(route))
+                self.assertEqual(reponse.status_code, 302)
+                self.assertIn(reverse('utilisateurs:login'), reponse['Location'])

@@ -9,7 +9,8 @@ from .forms import ClientForm
 from .models import Client
 
 
-class ClientListView(ListView):
+class ClientListView(PermissionRequiredMixin, ListView):
+    permission_required = "clients.view_client"
     model = Client
     template_name = "clients/client_list.html"
     context_object_name = "clients"
@@ -25,7 +26,8 @@ class ClientListView(ListView):
         return queryset.order_by("nom", "id")
 
 
-class ClientDetailView(DetailView):
+class ClientDetailView(PermissionRequiredMixin, DetailView):
+    permission_required = "clients.view_client"
     model = Client
     template_name = "clients/client_detail.html"
     context_object_name = "client"
