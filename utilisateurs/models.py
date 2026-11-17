@@ -4,6 +4,7 @@ from django.contrib.auth.models import AbstractUser, Group
 from django.db import models
 
 from core.permissions import PHARMACIEN, ROLES
+from core.utils import valider_image
 
 
 class Utilisateur(AbstractUser):
@@ -13,6 +14,13 @@ class Utilisateur(AbstractUser):
         "rôle principal", max_length=32, choices=ROLES, default=PHARMACIEN
     )
     telephone = models.CharField("téléphone", max_length=30, blank=True)
+    photo = models.ImageField(
+        "photo de profil",
+        upload_to="profils/%Y/%m/",
+        blank=True,
+        null=True,
+        validators=[valider_image],
+    )
 
     class Meta:
         verbose_name = "utilisateur"

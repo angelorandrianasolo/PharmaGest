@@ -136,6 +136,10 @@ LOGIN_URL = "utilisateurs:login"
 LOGIN_REDIRECT_URL = "home"
 LOGOUT_REDIRECT_URL = "utilisateurs:login"
 
+# Inscription publique : par défaut un compte reste inactif jusqu'à validation
+# par un administrateur. Passer à True pour une démonstration sans validation.
+INSCRIPTION_ACTIVATION_AUTO = env.bool("INSCRIPTION_ACTIVATION_AUTO", default=False)
+
 EMAIL_BACKEND = env(
     "EMAIL_BACKEND", default="django.core.mail.backends.console.EmailBackend"
 )

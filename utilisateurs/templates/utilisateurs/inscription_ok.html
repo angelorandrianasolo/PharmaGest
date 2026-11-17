@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Inscription enregistrée — PharmaGest{% endblock %}
+{% block content %}
+<div class="auth-wrap reveal">
+  <div class="auth-art">
+    <img src="{% static 'images/hero-pharmacie.svg' %}" alt="Illustration PharmaGest : traçabilité des lots et indicateurs">
+    <div class="auth-art-content">
+      <h2>Demande enregistrée.</h2>
+      <p>Votre identité est vérifiée avant l'ouverture de l'accès à l'espace de gestion.</p>
+    </div>
+  </div>
+  <div class="auth-panel">
+    <img class="auth-panel-logo" src="{% static 'images/logo.svg' %}" alt="PharmaGest">
+    <span class="eyebrow">Inscription</span>
+    <h1>Demande enregistrée</h1>
+    {% if activation_auto %}
+    <p class="lead">Votre compte est actif. Vous pouvez dès à présent accéder à votre espace.</p>
+    <a class="btn btn-primary" href="{% url 'utilisateurs:login' %}">Aller à la connexion</a>
+    {% else %}
+    <p class="lead">Votre compte a été créé. Il sera activé par un administrateur avant votre première connexion.</p>
+    <div class="auth-note"><svg class="ico"><use href="#i-clock"/></svg> Une fois activé, connectez-vous avec l'identifiant choisi.</div>
+    {% endif %}
+    <p class="auth-foot"><a href="{% url 'utilisateurs:login' %}">Retour à la connexion</a></p>
+  </div>
+</div>
+{% endblock %}

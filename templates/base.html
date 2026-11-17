@@ -16,6 +16,7 @@
 
 <svg class="svg-sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
   <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></symbol>
   <symbol id="i-pill" viewBox="0 0 24 24"><path d="M10.5 20.5a5 5 0 0 1-7-7l7-7a5 5 0 0 1 7 7z"/><path d="M7 10l7 7"/></symbol>
   <symbol id="i-box" viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></symbol>
   <symbol id="i-cart" viewBox="0 0 24 24"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.5 12h11l2.5-8H6"/></symbol>
@@ -48,6 +49,8 @@
 
     <p class="nav-label">Navigation</p>
     <nav class="side-nav" aria-label="Menu principal">
+      <a class="nav-item-app {% if request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'home' %}"><svg class="ico"><use href="#i-home"/></svg>Accueil</a>
+      <a class="nav-item-app {% if request.resolver_match.url_name == 'profil' or request.resolver_match.url_name == 'profil_modifier' or request.resolver_match.url_name == 'password_change' %}active{% endif %}" href="{% url 'utilisateurs:profil' %}"><svg class="ico"><use href="#i-users"/></svg>Mon profil</a>
       {% if perms.ventes.consulter_rapports %}
       <a class="nav-item-app {% if request.resolver_match.namespace == 'rapports' %}active{% endif %}" href="{% url 'rapports:dashboard' %}"><svg class="ico"><use href="#i-grid"/></svg>Tableau de bord</a>
       {% endif %}
@@ -95,7 +98,7 @@
       {% include 'includes/back_button.html' %}
       <div>
         <p class="topbar-title mb-0">{% block page_title %}Espace de gestion{% endblock %}</p>
-        <span class="topbar-sub">{% block page_subtitle %}Pharmacie · gestion quotidienne{% endblock %}</span>
+        <span class="topbar-sub">{% block page_subtitle %}Pharmacie · pilotage des opérations{% endblock %}</span>
       </div>
       <div class="topbar-spacer"></div>
       <span class="topbar-chip"><span class="dot"></span> Système actif</span>
@@ -110,7 +113,7 @@
 
 {% if user.is_authenticated %}
     <footer class="app-foot">
-      <span><strong>PharmaGest</strong> — gestion de pharmacie conforme au cahier des charges</span>
+      <span><strong>PharmaGest</strong> — solution de gestion officinale sécurisée et tracée</span>
       <span>FEFO · Traçabilité des lots · Rapports PDF</span>
     </footer>
   </div>

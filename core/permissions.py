@@ -10,6 +10,7 @@ PHARMACIEN = "pharmacien"
 GESTIONNAIRE_STOCK = "gestionnaire_stock"
 CAISSIER = "caissier"
 RESPONSABLE_GESTION = "responsable_gestion"
+INSCRIT = "inscrit"
 
 ROLES = [
     (ADMINISTRATEUR, "Administrateur"),
@@ -17,6 +18,7 @@ ROLES = [
     (GESTIONNAIRE_STOCK, "Gestionnaire de stock"),
     (CAISSIER, "Caissier"),
     (RESPONSABLE_GESTION, "Responsable de gestion"),
+    (INSCRIT, "Utilisateur inscrit"),
 ]
 
 COMMUN = [
@@ -89,6 +91,9 @@ ROLE_PERMISSIONS = {
         "consulter_rapports",
         "view_journalaudit",
     ],
+    # Un compte créé via le formulaire public n'obtient qu'un accès en lecture
+    # au catalogue, dans l'attente de son activation par un administrateur.
+    INSCRIT: list(COMMUN),
 }
 
 

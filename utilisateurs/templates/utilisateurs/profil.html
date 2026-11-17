@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Mon profil — PharmaGest{% endblock %}
+{% block page_title %}Mon profil{% endblock %}
+{% block page_subtitle %}Identité, coordonnées et sécurité du compte{% endblock %}
+{% block content %}
+<div class="page-head reveal">
+  <div>
+    <span class="eyebrow">Espace personnel</span>
+    <h1>Mon profil</h1>
+    <p>Consultez vos informations et gérez la sécurité de votre compte.</p>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-4 reveal">
+    <div class="card profile-card text-center">
+      <div class="card-body">
+        {% if user.photo %}
+          <img class="profile-photo" src="{{ user.photo.url }}" alt="Photo de profil de {{ user.get_full_name|default:user.username }}">
+        {% else %}
+          <div class="profile-avatar">{{ user.get_full_name|default:user.username|first|upper }}</div>
+        {% endif %}
+        <h2 class="profile-nom">{{ user.get_full_name|default:user.username }}</h2>
+        <span class="badge bg-primary-subtle text-primary">{{ user.get_role_display }}</span>
+        <p class="text-muted small mt-3 mb-0">Identifiant : <strong>{{ user.username }}</strong></p>
+        <p class="text-muted small mb-0">Membre depuis le {{ user.date_joined|date:'d/m/Y' }}</p>
+        <a class="btn btn-sm btn-outline-primary mt-3" href="{% url 'utilisateurs:profil_modifier' %}">Modifier ma photo</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-8 reveal">
+    <div class="card">
+      <div class="card-header"><svg class="ico"><use href="#i-users"/></svg> Informations personnelles</div>
+      <div class="card-body">
+        <table class="detail-table">
+          <tbody>
+            <tr><th>Nom complet</th><td>{{ user.get_full_name|default:'Non renseigné' }}</td></tr>
+            <tr><th>Identifiant</th><td>{{ user.username }}</td></tr>
+            <tr><th>Adresse e-mail</th><td>{{ user.email|default:'Non renseignée' }}</td></tr>
+            <tr><th>Téléphone</th><td>{{ user.telephone|default:'Non renseigné' }}</td></tr>
+            <tr><th>Rôle principal</th><td>{{ user.get_role_display }}</td></tr>
+            <tr><th>Statut du compte</th><td>{% if user.is_active %}Actif{% else %}Inactif{% endif %}</td></tr>
+            <tr><th>Mot de passe</th><td>Protégé — jamais affiché. <a href="{% url 'utilisateurs:password_change' %}">Le modifier</a></td></tr>
+          </tbody>
+        </table>
+        <div class="d-flex flex-wrap gap-2 mt-3">
+          <a class="btn btn-primary" href="{% url 'utilisateurs:profil_modifier' %}">Modifier mes informations</a>
+          <a class="btn btn-outline-primary" href="{% url 'utilisateurs:password_change' %}">Changer le mot de passe</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mt-3">
+      <div class="card-header"><svg class="ico"><use href="#i-shield"/></svg> Photo de profil</div>
+      <div class="card-body">
+        <p class="text-muted small">La suppression de la photo nécessite la confirmation de votre mot de passe.</p>
+        <form method="post" action="{% url 'utilisateurs:photo_supprimer' %}" class="row g-2 align-items-end">
+          {% csrf_token %}
+          <div class="col-md-7">
+            <label class="form-label" for="{{ form_suppression_photo.mot_de_passe.id_for_label }}">{{ form_suppression_photo.mot_de_passe.label }}</label>
+            {{ form_suppression_photo.mot_de_passe }}
+            {{ form_suppression_photo.mot_de_passe.errors }}
+          </div>
+          <div class="col-md-5">
+            <button class="btn btn-outline-danger" type="submit" {% if not user.photo %}disabled{% endif %}>Supprimer la photo</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

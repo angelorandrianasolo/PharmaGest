@@ -6,6 +6,11 @@ app_name = "utilisateurs"
 
 urlpatterns = [
     path("connexion/", views.ConnexionView.as_view(), name="login"),
+    path("inscription/", views.InscriptionView.as_view(), name="inscription"),
+    path("inscription/ok/", views.InscriptionOKView.as_view(), name="inscription_ok"),
+    path("profil/", views.ProfilView.as_view(), name="profil"),
+    path("profil/modifier/", views.ProfilModificationView.as_view(), name="profil_modifier"),
+    path("profil/photo/supprimer/", views.PhotoSuppressionView.as_view(), name="photo_supprimer"),
     path("deconnexion/", views.DeconnexionView.as_view(), name="logout"),
     path("mot-de-passe/", views.ChangementMotDePasseView.as_view(), name="password_change"),
     path(

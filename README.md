@@ -12,7 +12,8 @@ Fonctionnalités principales :
 - caisse avec ventes atomiques, paiements espèces ou mobile money, retours compensatoires et annulations tracées ;
 - tableau de bord, alertes de rupture/péremption et documents **PDF ReportLab** ;
 - rôles et permissions, journal d'audit, sauvegarde/restauration ;
-- jeu de données fictives et 49 tests automatisés.
+- inscription publique (compte à activer), profil consultable et modifiable avec photo de profil et confirmation du mot de passe ;
+- jeu de données fictives et 59 tests automatisés.
 
 ---
 
@@ -58,13 +59,23 @@ Mot de passe unique : **`pharma123`** (à changer impérativement hors démonstr
 | `caissier`   | Caissier                 | Caisse, clients, paiements, retours     |
 | `gestion`    | Responsable de gestion   | Consultation et rapports                |
 
+Un visiteur peut créer un compte depuis la page de connexion (`Créer un compte`). Le compte est
+créé avec le rôle **Utilisateur inscrit** (lecture du catalogue) et reste inactif jusqu'à son
+activation par un administrateur dans `Utilisateurs`. Le réglage `INSCRIPTION_ACTIVATION_AUTO=True`
+permet de l'activer immédiatement (démonstration uniquement).
+
+Chaque utilisateur dispose d'une page **Mon profil** (menu latéral) : consultation de son identité,
+de ses coordonnées et de son rôle, modification des informations et de la photo de profil après
+confirmation du mot de passe actuel, et changement de mot de passe dédié. La suppression de la photo
+nécessite également cette confirmation.
+
 ## 3. Commandes courantes
 
 ```bash
 # Vérification du projet
 docker compose run --rm web python manage.py check
 
-# Tests automatisés (49 tests)
+# Tests automatisés (59 tests)
 docker compose run --rm web python manage.py test
 
 # Contrôle de cohérence stock <> mouvements
@@ -210,8 +221,12 @@ Un bouton **Retour** est disponible sur toutes les pages (dans la barre supérie
 pages connectées, au-dessus du formulaire pour les pages publiques) : il revient à la page
 précédente et replie sur l'accueil en l'absence d'historique.
 
-La page de connexion utilise une illustration originale (`static/images/hero-pharmacie.svg`),
-un formulaire avec autocomplétion et icônes de champ, et un accès balisé « mot de passe oublié ».
+La page de connexion est une carte centrée : illustration originale en bandeau
+(`static/images/hero-pharmacie.svg`), formulaire avec autocomplétion et icônes de champ, accès
+balisé « mot de passe oublié » et lien vers l'inscription. Les pages d'inscription reprennent la
+même présentation centrée. Le menu latéral propose les entrées **Accueil** et **Mon profil**, et un
+visiteur non connecté est systématiquement redirigé vers la connexion.
+
 Les maquettes extraites du cahier restent archivées dans `static/images/maquettes/` comme
 références de conception. Les illustrations de `static/images/medicaments/` sont des visuels
 de démonstration : dès qu'une photo réelle est téléversée sur un médicament, c'est elle qui est

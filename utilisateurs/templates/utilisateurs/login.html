@@ -6,15 +6,13 @@
   <div class="auth-art">
     <img src="{% static 'images/hero-pharmacie.svg' %}" alt="Illustration PharmaGest : traçabilité des lots et indicateurs">
     <div class="auth-art-content">
-      <img class="brand-mark" src="{% static 'images/logo.svg' %}" alt="">
       <h2>Votre pharmacie, sous contrôle.</h2>
-      <p>Gérez les stocks, les lots, les ventes et les rapports depuis un seul espace sécurisé.</p>
-      <div class="auth-art-tags"><span>FEFO</span><span>Traçabilité</span><span>Rapports PDF</span></div>
+      <p>Pilotez vos stocks, vos lots, vos ventes et vos rapports depuis un espace unique, sécurisé et entièrement tracé.</p>
     </div>
   </div>
   <div class="auth-panel">
     <img class="auth-panel-logo" src="{% static 'images/logo.svg' %}" alt="PharmaGest">
-    <span class="eyebrow">Accès sécurisé</span>
+    <span class="eyebrow">Espace sécurisé</span>
     <h1>Connexion</h1>
     <p class="lead">Identifiez-vous pour accéder à votre espace de gestion.</p>
     <form method="post">
@@ -32,8 +30,12 @@
       {{ form.non_field_errors }}
       <button class="btn btn-primary" type="submit">Se connecter <svg class="ico" style="width:16px;height:16px;display:inline;vertical-align:-3px"><use href="#i-arrow"/></svg></button>
     </form>
-    <p class="auth-security"><svg class="ico"><use href="#i-shield"/></svg> Accès réservé au personnel autorisé de la pharmacie.</p>
-    <p class="auth-foot"><a href="{% url 'utilisateurs:password_reset' %}">Mot de passe oublié ?</a></p>
+    <p class="auth-security"><svg class="ico"><use href="#i-shield"/></svg> Espace réservé au personnel habilité — accès tracés.</p>
+    <p class="auth-foot">
+      <a href="{% url 'utilisateurs:password_reset' %}">Mot de passe oublié ?</a>
+      <span class="auth-sep">·</span>
+      <a href="{% url 'utilisateurs:inscription' %}">Créer un compte</a>
+    </p>
   </div>
 </div>
 {% endblock %}

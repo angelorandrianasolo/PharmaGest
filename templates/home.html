@@ -6,9 +6,9 @@
 {% block content %}
 <section class="hero reveal">
   <div class="hero-copy">
-    <span class="eyebrow">Espace pharmacie · gestion quotidienne</span>
+    <span class="eyebrow">Espace pharmacie · pilotage des opérations</span>
     <h1>Une gestion de pharmacie <em>claire, sûre et tracée.</em></h1>
-    <p>Médicaments, lots, achats, ventes et rapports réunis dans une seule interface. Les règles FEFO et la traçabilité appliquées à chaque délivrance.</p>
+    <p>Catalogue, stocks, approvisionnements, ventes et rapports sont pilotés depuis un environnement unique. La rotation FEFO et la traçabilité des lots sont appliquées à chaque délivrance.</p>
     <div class="hero-actions">
       {% if perms.ventes.add_vente %}
       <a class="btn btn-primary" href="{% url 'ventes:caisse' %}">
@@ -29,7 +29,7 @@
   </div>
 </section>
 
-<div class="section-head reveal"><h2>Accès rapides</h2><span>selon vos permissions</span></div>
+<div class="section-head reveal"><h2>Accès rapides</h2><span>selon vos habilitations</span></div>
 <div class="action-grid reveal">
   {% if perms.ventes.add_vente %}
   <a class="action-card" href="{% url 'ventes:caisse' %}">
