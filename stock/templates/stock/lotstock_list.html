@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3"><h1 class="h4">Lots de stock</h1>
+<div>
+  <a class="btn btn-sm btn-outline-secondary" href="{% url 'stock:mouvements' %}">Historique des mouvements</a>
+  {% if perms.stock.change_lotstock %}<a class="btn btn-sm btn-primary" href="{% url 'stock:correction' %}">Correction / inventaire</a>{% endif %}
+</div></div>
+<form method="get" class="row g-2 mb-3">
+  <div class="col-md-4"><input class="form-control" name="q" placeholder="Médicament ou lot" value="{{ request.GET.q|default:'' }}"></div>
+  <div class="col-md-3"><label class="form-check"><input class="form-check-input" type="checkbox" name="perimes" value="1" {% if request.GET.perimes == '1' %}checked{% endif %}> Péremptions uniquement</label></div>
+  <div class="col-md-2"><button class="btn btn-outline-primary" type="submit">Filtrer</button></div>
+</form>
+<div class="table-responsive"><table class="table table-sm table-hover"><thead><tr><th>Médicament</th><th>Lot</th><th>Péremption</th><th>Quantité</th><th>État</th><th></th></tr></thead><tbody>
+{% for l in lots %}<tr>
+  <td>{{ l.medicament.nom }}</td><td>{{ l.numero_lot }}</td><td>{{ l.date_peremption|date:'d/m/Y' }}</td><td>{{ l.quantite }}</td>
+  <td>{% if l.est_perime %}<span class="badge bg-danger">Périmé</span>{% elif l.est_bloque %}<span class="badge bg-warning text-dark">Bloqué</span>{% elif l.quantite == 0 %}<span class="badge bg-secondary">Épuisé</span>{% else %}<span class="badge bg-success">Délivrable</span>{% endif %}</td>
+  <td>{% if perms.stock.change_lotstock %}<form method="post" action="{% url 'stock:blocage' l.pk %}">{% csrf_token %}<button class="btn btn-sm btn-outline-warning" type="submit">{% if l.est_bloque %}Débloquer{% else %}Bloquer{% endif %}</button></form>{% endif %}</td>
+</tr>{% endfor %}
+</tbody></table></div>
+{% include 'includes/pagination.html' %}
+{% endblock %}
