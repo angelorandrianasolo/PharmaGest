@@ -1,24 +1,104 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block title %}Accueil — PharmaGest{% endblock %}
+{% block page_title %}Bienvenue{% endblock %}
+{% block page_subtitle %}Vue d’ensemble de votre pharmacie{% endblock %}
 {% block content %}
-<div class="row">
-  <div class="col-lg-8">
-    <h1 class="h3 mb-3">Bienvenue sur PharmaGest</h1>
-    <p class="text-muted">Gestion centralisée des médicaments, des achats, des ventes et des stocks.</p>
-    <div class="row g-3 mt-2">
+<section class="hero reveal">
+  <div class="hero-copy">
+    <span class="eyebrow">Espace pharmacie · gestion quotidienne</span>
+    <h1>Une gestion de pharmacie <em>claire, sûre et tracée.</em></h1>
+    <p>Médicaments, lots, achats, ventes et rapports réunis dans une seule interface. Les règles FEFO et la traçabilité appliquées à chaque délivrance.</p>
+    <div class="hero-actions">
       {% if perms.ventes.add_vente %}
-      <div class="col-md-4"><a class="btn btn-primary w-100" href="{% url 'ventes:caisse' %}">Ouvrir la caisse</a></div>
+      <a class="btn btn-primary" href="{% url 'ventes:caisse' %}">
+        <svg class="ico" style="width:16px;height:16px;display:inline;vertical-align:-3px"><use href="#i-cash"/></svg> Ouvrir la caisse
+      </a>
       {% endif %}
       {% if perms.medicaments.view_medicament %}
-      <div class="col-md-4"><a class="btn btn-outline-primary w-100" href="{% url 'medicaments:liste' %}">Catalogue des médicaments</a></div>
+      <a class="btn btn-outline-light" href="{% url 'medicaments:liste' %}">Voir le catalogue</a>
       {% endif %}
       {% if perms.ventes.consulter_rapports %}
-      <div class="col-md-4"><a class="btn btn-outline-primary w-100" href="{% url 'rapports:dashboard' %}">Tableau de bord</a></div>
+      <a class="btn btn-outline-light" href="{% url 'rapports:dashboard' %}">Tableau de bord</a>
       {% endif %}
     </div>
   </div>
-  <div class="col-lg-4">
-    {% include 'medicaments/apercu_stock.html' %}
+  <div class="hero-art">
+    <img src="{% static 'images/maquettes/couverture.jpg' %}" alt="Aperçu graphique du projet PharmaGest">
+    <div class="hero-badge"><svg class="ico"><use href="#i-spark"/></svg> Visuels du cahier des charges</div>
+  </div>
+</section>
+
+<div class="section-head reveal"><h2>Accès rapides</h2><span>selon vos permissions</span></div>
+<div class="action-grid reveal">
+  {% if perms.ventes.add_vente %}
+  <a class="action-card" href="{% url 'ventes:caisse' %}">
+    <span class="action-icon amber"><svg class="ico"><use href="#i-cash"/></svg></span>
+    <span><strong>Nouvelle vente</strong><small>Ouvrir la caisse et encaisser</small></span>
+    <svg class="ico arrow"><use href="#i-arrow"/></svg>
+  </a>
+  {% endif %}
+  {% if perms.medicaments.view_medicament %}
+  <a class="action-card" href="{% url 'medicaments:liste' %}">
+    <span class="action-icon"><svg class="ico"><use href="#i-pill"/></svg></span>
+    <span><strong>Catalogue</strong><small>Médicaments et photos</small></span>
+    <svg class="ico arrow"><use href="#i-arrow"/></svg>
+  </a>
+  {% endif %}
+  {% if perms.stock.view_lotstock %}
+  <a class="action-card" href="{% url 'stock:lots' %}">
+    <span class="action-icon info"><svg class="ico"><use href="#i-box"/></svg></span>
+    <span><strong>Stocks</strong><small>Lots et péremptions</small></span>
+    <svg class="ico arrow"><use href="#i-arrow"/></svg>
+  </a>
+  {% endif %}
+  {% if perms.achats.view_commandeachat %}
+  <a class="action-card" href="{% url 'achats:liste' %}">
+    <span class="action-icon"><svg class="ico"><use href="#i-cart"/></svg></span>
+    <span><strong>Achats</strong><small>Commandes et réceptions</small></span>
+    <svg class="ico arrow"><use href="#i-arrow"/></svg>
+  </a>
+  {% endif %}
+  {% if perms.ventes.consulter_rapports %}
+  <a class="action-card" href="{% url 'rapports:dashboard' %}">
+    <span class="action-icon amber"><svg class="ico"><use href="#i-chart"/></svg></span>
+    <span><strong>Statistiques</strong><small>Indicateurs et rapports PDF</small></span>
+    <svg class="ico arrow"><use href="#i-arrow"/></svg>
+  </a>
+  {% endif %}
+</div>
+
+<div class="row g-3 mt-1">
+  <div class="col-lg-5 reveal">{% include 'medicaments/apercu_stock.html' %}</div>
+  <div class="col-lg-7 reveal">
+    <div class="card h-100">
+      <div class="card-header"><svg class="ico"><use href="#i-file"/></svg> Références visuelles du cahier des charges</div>
+      <div class="card-body">
+        <p class="text-muted small mb-3">Les maquettes fournies dans le cahier sont conservées ici comme référence de conception. Cliquez sur un aperçu pour l’agrandir.</p>
+        <div class="maquette-strip">
+          <a class="maquette" href="{% static 'images/maquettes/tableau-de-bord.jpg' %}" target="_blank" rel="noopener">
+            <img src="{% static 'images/maquettes/tableau-de-bord.jpg' %}" alt="Maquette du tableau de bord" loading="lazy">
+            <div><strong>Tableau de bord</strong><small>Indicateurs et alertes</small></div>
+          </a>
+          <a class="maquette" href="{% static 'images/maquettes/medicaments.jpg' %}" target="_blank" rel="noopener">
+            <img src="{% static 'images/maquettes/medicaments.jpg' %}" alt="Maquette de la gestion des médicaments" loading="lazy">
+            <div><strong>Médicaments</strong><small>Liste avec photos</small></div>
+          </a>
+          <a class="maquette" href="{% static 'images/maquettes/vente-caisse.jpg' %}" target="_blank" rel="noopener">
+            <img src="{% static 'images/maquettes/vente-caisse.jpg' %}" alt="Maquette de l’interface de caisse" loading="lazy">
+            <div><strong>Vente &amp; caisse</strong><small>Panier et encaissement</small></div>
+          </a>
+          <a class="maquette" href="{% static 'images/maquettes/stocks-rapports.jpg' %}" target="_blank" rel="noopener">
+            <img src="{% static 'images/maquettes/stocks-rapports.jpg' %}" alt="Maquette des stocks et achats" loading="lazy">
+            <div><strong>Stocks &amp; achats</strong><small>Lots et réceptions</small></div>
+          </a>
+          <a class="maquette" href="{% static 'images/maquettes/presentation.jpg' %}" target="_blank" rel="noopener">
+            <img src="{% static 'images/maquettes/presentation.jpg' %}" alt="Graphiques statistiques du projet" loading="lazy">
+            <div><strong>Graphiques</strong><small>Statistiques et rapports</small></div>
+          </a>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 {% endblock %}

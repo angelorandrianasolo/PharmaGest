@@ -1,20 +1,66 @@
 {% extends 'base.html' %}
 {% block title %}Caisse{% endblock %}
+{% block page_title %}Caisse{% endblock %}
+{% block page_subtitle %}Enregistrer une nouvelle vente{% endblock %}
 {% block content %}
-<h1 class="h4 mb-3">Caisse — nouvelle vente</h1>
-<form method="post" class="card card-body shadow-sm">
+<div class="page-head reveal">
+  <div>
+    <span class="eyebrow">Point de vente</span>
+    <h1>Nouvelle vente</h1>
+    <p>Choisissez les produits et les quantités. Les lots sont attribués automatiquement selon la règle FEFO.</p>
+  </div>
+</div>
+
+<form method="post" class="card reveal">
   {% csrf_token %}
   <input type="hidden" name="idempotency_key" value="{{ idempotency_key }}">
-  <div class="row">{% for field in form %}<div class="col-md-4 mb-3"><label class="form-label">{{ field.label }}</label>{{ field }}{{ field.errors }}</div>{% endfor %}</div>
-  <h2 class="h6">Produits</h2>
-  {{ formset.management_form }}
-  {% for sform in formset %}
-    <div class="row g-2 mb-2">
-      {% for field in sform %}<div class="col-md-4"><label class="form-label small">{{ field.label }}</label>{{ field }}{{ field.errors }}</div>{% endfor %}
+
+  <div class="caisse-section">
+    <h2 class="caisse-section-title"><span class="num">1</span> Informations de la vente</h2>
+    <div class="row g-3">
+      {% for field in form %}
+      <div class="col-md-4">
+        <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}{{ field.errors }}
+      </div>
+      {% endfor %}
     </div>
-  {% endfor %}
-  {{ formset.non_form_errors }}
-  <button class="btn btn-primary" type="submit">Valider la vente</button>
+    {{ form.non_field_errors }}
+  </div>
+
+  <div class="caisse-section">
+    <h2 class="caisse-section-title"><span class="num">2</span> Produits vendus</h2>
+    {{ formset.management_form }}
+    {% for sform in formset %}
+      <div class="ligne">
+        <span class="ligne-num">{{ forloop.counter }}</span>
+        <div class="ligne-champs">
+          {% for field in sform %}
+            {% if field.field.widget.input_type == 'hidden' %}
+              {{ field }}
+            {% elif field.name == 'DELETE' %}
+              <div class="form-check align-self-end pb-2">
+                {{ field }}<label class="form-check-label small text-muted" for="{{ field.id_for_label }}">Retirer cette ligne</label>
+              </div>
+            {% else %}
+              <div>
+                <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}{{ field.errors }}
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+    {% endfor %}
+    {{ formset.non_form_errors }}
+  </div>
+
+  <div class="caisse-submit">
+    <p class="mb-0 note-fefo" style="margin-top:0">
+      <svg class="ico"><use href="#i-shield"/></svg>
+      <span>Les lots périmés ou bloqués sont exclus. Les paiements mobile money restent en attente de confirmation.</span>
+    </p>
+    <button class="btn btn-primary" type="submit">Valider la vente <svg class="ico" style="width:16px;height:16px;display:inline;vertical-align:-3px"><use href="#i-arrow"/></svg></button>
+  </div>
 </form>
-<p class="text-muted mt-3">Les lots sont choisis automatiquement selon la méthode FEFO (première péremption, première sortie). Les lots périmés ou bloqués sont exclus.</p>
 {% endblock %}

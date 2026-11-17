@@ -1,31 +1,63 @@
 {% extends 'base.html' %}
+{% block title %}{{ medicament.nom }}{% endblock %}
+{% block page_title %}{{ medicament.nom }}{% endblock %}
+{% block page_subtitle %}Fiche produit et lots associés{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3">
-  <h1 class="h4">{{ medicament.nom }}</h1>
-  {% if perms.medicaments.change_medicament %}
+<div class="page-head reveal">
   <div>
-    <a class="btn btn-sm btn-outline-primary" href="{% url 'medicaments:modifier' medicament.pk %}">Modifier</a>
+    <span class="eyebrow">Fiche médicament</span>
+    <h1>{{ medicament.nom }}</h1>
+    <p>{{ medicament.categorie.nom }} · {{ medicament.forme|default:'—' }} · {{ medicament.dosage|default:'—' }}</p>
+  </div>
+  <div class="page-head-actions">
+    {% if perms.medicaments.change_medicament %}
+    <a class="btn btn-outline-primary" href="{% url 'medicaments:modifier' medicament.pk %}">Modifier</a>
     <form method="post" action="{% url 'medicaments:archiver' medicament.pk %}" class="d-inline">
-      {% csrf_token %}<button class="btn btn-sm btn-outline-warning" type="submit" onclick="return confirm('Confirmer cette opération ?')">{% if medicament.statut == 'archive' %}Restaurer{% else %}Archiver{% endif %}</button>
+      {% csrf_token %}
+      <button class="btn btn-outline-warning" type="submit" onclick="return confirm('Confirmer cette opération ?')">{% if medicament.statut == 'archive' %}Restaurer{% else %}Archiver{% endif %}</button>
     </form>
-  </div>{% endif %}
+    {% endif %}
+  </div>
 </div>
-<div class="row">
-  <div class="col-md-3">{% if medicament.photo %}<img src="{{ medicament.photo.url }}" class="img-fluid rounded" alt="Photo">{% endif %}</div>
-  <div class="col-md-9">
-    <table class="table table-sm">
-      <tr><th>Catégorie</th><td>{{ medicament.categorie.nom }}</td></tr>
-      <tr><th>Dénomination générique</th><td>{{ medicament.denomination_generique|default:'-' }}</td></tr>
-      <tr><th>Forme / Dosage</th><td>{{ medicament.forme|default:'-' }} / {{ medicament.dosage|default:'-' }}</td></tr>
-      <tr><th>Laboratoire</th><td>{{ medicament.laboratoire|default:'-' }}</td></tr>
-      <tr><th>Code-barres</th><td>{{ medicament.code_barres|default:'-' }}</td></tr>
-      <tr><th>Prix d'achat / vente</th><td>{{ medicament.prix_achat }} Ar / {{ medicament.prix_vente }} Ar</td></tr>
-      <tr><th>Seuil d'alerte</th><td>{{ medicament.seuil_alerte }}</td></tr>
-      <tr><th>Stock disponible</th><td>{{ medicament.stock_disponible }}</td></tr>
-    </table>
-    <h2 class="h6">Lots</h2>
-    <table class="table table-sm"><thead><tr><th>Lot</th><th>Péremption</th><th>Quantité</th><th>État</th></tr></thead><tbody>
-      {% for lot in medicament.lots.all %}<tr><td>{{ lot.numero_lot }}</td><td>{{ lot.date_peremption|date:'d/m/Y' }}</td><td>{{ lot.quantite }}</td><td>{% if lot.est_delivrable %}<span class="badge bg-success">Délivrable</span>{% else %}<span class="badge bg-danger">Indisponible</span>{% endif %}</td></tr>{% endfor %}
+
+<div class="row g-3">
+  <div class="col-lg-4 reveal">
+    <div class="detail-photo">{% include 'medicaments/includes/photo.html' with medicament=medicament %}</div>
+    <div class="card mt-3">
+      <div class="card-header"><svg class="ico"><use href="#i-box"/></svg> Disponibilité</div>
+      <div class="card-body">
+        <div class="stat-label">Stock disponible</div>
+        <div class="stat-value">{{ medicament.stock_disponible }}</div>
+        <div class="stat-note">Seuil d’alerte : {{ medicament.seuil_alerte }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-8 reveal">
+    <div class="card h-100">
+      <div class="card-header"><svg class="ico"><use href="#i-file"/></svg> Informations produit</div>
+      <div class="card-body">
+        <table class="detail-table">
+          <tr><th>Catégorie</th><td>{{ medicament.categorie.nom }}</td></tr>
+          <tr><th>Dénomination générique</th><td>{{ medicament.denomination_generique|default:'—' }}</td></tr>
+          <tr><th>Forme / Dosage</th><td>{{ medicament.forme|default:'—' }} / {{ medicament.dosage|default:'—' }}</td></tr>
+          <tr><th>Laboratoire</th><td>{{ medicament.laboratoire|default:'—' }}</td></tr>
+          <tr><th>Code-barres</th><td>{{ medicament.code_barres|default:'—' }}</td></tr>
+          <tr><th>Prix d’achat / vente</th><td>{{ medicament.prix_achat }} Ar / <strong>{{ medicament.prix_vente }} Ar</strong></td></tr>
+          <tr><th>Statut</th><td>{{ medicament.get_statut_display }}</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card mt-3 reveal">
+  <div class="card-header"><svg class="ico"><use href="#i-box"/></svg> Lots du médicament</div>
+  <div class="table-responsive">
+    <table class="table table-sm mb-0"><thead><tr><th>Lot</th><th>Péremption</th><th>Quantité</th><th>État</th></tr></thead><tbody>
+      {% for lot in medicament.lots.all %}
+      <tr><td><strong>{{ lot.numero_lot }}</strong></td><td>{{ lot.date_peremption|date:'d/m/Y' }}</td><td>{{ lot.quantite }}</td>
+        <td>{% if lot.est_delivrable %}<span class="badge bg-success">Délivrable</span>{% else %}<span class="badge bg-danger">Indisponible</span>{% endif %}</td></tr>
+      {% empty %}<tr><td colspan="4" class="text-muted">Aucun lot enregistré.</td></tr>{% endfor %}
     </tbody></table>
   </div>
 </div>

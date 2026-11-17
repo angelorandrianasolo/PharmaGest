@@ -1,51 +1,125 @@
 {% extends 'base.html' %}
 {% block title %}Tableau de bord{% endblock %}
+{% block page_title %}Tableau de bord{% endblock %}
+{% block page_subtitle %}Indicateurs du jour et alertes de gestion{% endblock %}
 {% block content %}
-<h1 class="h4 mb-3">Tableau de bord</h1>
+<div class="page-head reveal">
+  <div>
+    <span class="eyebrow">Pilotage</span>
+    <h1>Tableau de bord</h1>
+    <p>Une lecture immédiate de l’activité, des stocks et des échéances de péremption.</p>
+  </div>
+  <div class="page-head-actions">
+    <a class="btn btn-outline-primary btn-sm" href="{% url 'rapports:rapport_stock' %}" target="_blank">Rapport stock</a>
+    <a class="btn btn-primary btn-sm" href="{% url 'rapports:rapport_ventes' %}" target="_blank">Rapport ventes</a>
+  </div>
+</div>
+
+<div class="stat-grid reveal">
+  <div class="stat-card">
+    <span class="stat-icon"><svg class="ico"><use href="#i-pill"/></svg></span>
+    <div class="stat-label">Médicaments actifs</div>
+    <div class="stat-value">{{ medicaments_actifs }}</div>
+    <div class="stat-note">références en catalogue</div>
+  </div>
+  <div class="stat-card amber">
+    <span class="stat-icon"><svg class="ico"><use href="#i-receipt"/></svg></span>
+    <div class="stat-label">Ventes du jour</div>
+    <div class="stat-value">{{ ventes_du_jour }}</div>
+    <div class="stat-note">{{ ca_du_jour }} Ar de chiffre d’affaires</div>
+  </div>
+  <div class="stat-card info">
+    <span class="stat-icon"><svg class="ico"><use href="#i-trend"/></svg></span>
+    <div class="stat-label">Encaissements du jour</div>
+    <div class="stat-value">{{ encaissements }} <span style="font-size:.8rem">Ar</span></div>
+    <div class="stat-note">paiements confirmés</div>
+  </div>
+  <div class="stat-card danger">
+    <span class="stat-icon"><svg class="ico"><use href="#i-chart"/></svg></span>
+    <div class="stat-label">Marge commerciale</div>
+    <div class="stat-value">{{ marge }} <span style="font-size:.8rem">Ar</span></div>
+    <div class="stat-note">hors charges</div>
+  </div>
+</div>
+
 <div class="row g-3">
-  <div class="col-md-3"><div class="card card-stat shadow-sm"><div class="card-body"><div class="text-muted">Médicaments actifs</div><div class="h3">{{ medicaments_actifs }}</div></div></div></div>
-  <div class="col-md-3"><div class="card card-stat shadow-sm"><div class="card-body"><div class="text-muted">Ventes du jour</div><div class="h3">{{ ventes_du_jour }}</div><div class="small">{{ ca_du_jour }} Ar de CA</div></div></div></div>
-  <div class="col-md-3"><div class="card card-stat shadow-sm"><div class="card-body"><div class="text-muted">Encaissements du jour</div><div class="h3">{{ encaissements }} Ar</div></div></div></div>
-  <div class="col-md-3"><div class="card card-stat shadow-sm"><div class="card-body"><div class="text-muted">Marge commerciale</div><div class="h3">{{ marge }} Ar</div><div class="small">hors charges</div></div></div></div>
-</div>
-
-<div class="row g-3 mt-2">
-  <div class="col-lg-6"><div class="card shadow-sm"><div class="card-header">Ventes des 7 derniers jours (Ar)</div><div class="card-body">
-    <div class="d-flex align-items-end justify-content-around" style="height:170px">
-      {% for j in ventes_par_jour %}<div class="text-center"><div class="barre" style="height:{{ j.hauteur }}px" title="{{ j.valeur }} Ar"></div><small>{{ j.jour }}</small></div>{% endfor %}
+  <div class="col-lg-6 reveal">
+    <div class="card h-100">
+      <div class="card-header"><svg class="ico"><use href="#i-chart"/></svg> Ventes des 7 derniers jours <span class="ms-auto text-muted small fw-normal">Ar</span></div>
+      <div class="card-body">
+        <div class="chart">
+          {% for j in ventes_par_jour %}<div class="chart-col"><div class="barre" style="height:{{ j.hauteur }}px" title="{{ j.valeur }} Ar"></div><small>{{ j.jour }}</small></div>{% endfor %}
+        </div>
+      </div>
     </div>
-  </div></div></div>
-  <div class="col-lg-6"><div class="card shadow-sm"><div class="card-header">Réceptions des 7 derniers jours (unités)</div><div class="card-body">
-    <div class="d-flex align-items-end justify-content-around" style="height:170px">
-      {% for j in achats_par_jour %}<div class="text-center"><div class="barre barre-achat" style="height:{{ j.hauteur }}px" title="{{ j.valeur }} unités"></div><small>{{ j.jour }}</small></div>{% endfor %}
+  </div>
+  <div class="col-lg-6 reveal">
+    <div class="card h-100">
+      <div class="card-header"><svg class="ico"><use href="#i-box"/></svg> Réceptions des 7 derniers jours <span class="ms-auto text-muted small fw-normal">unités</span></div>
+      <div class="card-body">
+        <div class="chart">
+          {% for j in achats_par_jour %}<div class="chart-col"><div class="barre barre-achat" style="height:{{ j.hauteur }}px" title="{{ j.valeur }} unités"></div><small>{{ j.jour }}</small></div>{% endfor %}
+        </div>
+      </div>
     </div>
-  </div></div></div>
+  </div>
 </div>
 
-<div class="row g-3 mt-2">
-  <div class="col-lg-4"><div class="card shadow-sm"><div class="card-header">Stocks faibles</div><ul class="list-group list-group-flush">
-    {% for m in stocks_faibles %}<li class="list-group-item d-flex justify-content-between">{{ m.nom }}<span class="badge bg-warning text-dark">{{ m.stock_valide|default:0 }} / {{ m.seuil_alerte }}</span></li>{% empty %}<li class="list-group-item text-muted">Aucune alerte.</li>{% endfor %}
-  </ul></div></div>
-  <div class="col-lg-4"><div class="card shadow-sm"><div class="card-header">Péremptions à 30 jours</div><ul class="list-group list-group-flush">
-    {% for l in peremptions_proches %}<li class="list-group-item d-flex justify-content-between">{{ l.medicament.nom }}<span class="badge bg-info text-dark">{{ l.date_peremption|date:'d/m/Y' }} — {{ l.quantite }}</span></li>{% empty %}<li class="list-group-item text-muted">Aucune.</li>{% endfor %}
-  </ul></div></div>
-  <div class="col-lg-4"><div class="card shadow-sm"><div class="card-header">Lots périmés en stock</div><ul class="list-group list-group-flush">
-    {% for l in lots_perimes %}<li class="list-group-item d-flex justify-content-between">{{ l.medicament.nom }}<span class="badge bg-danger">{{ l.date_peremption|date:'d/m/Y' }} — {{ l.quantite }}</span></li>{% empty %}<li class="list-group-item text-muted">Aucun.</li>{% endfor %}
-  </ul></div></div>
+<div class="row g-3 mt-1">
+  <div class="col-lg-4 reveal">
+    <div class="card h-100">
+      <div class="card-header"><svg class="ico"><use href="#i-alert"/></svg> Stocks faibles</div>
+      <ul class="list-alertes">
+        {% for m in stocks_faibles %}<li><span>{{ m.nom }}</span><span class="badge bg-warning">{{ m.stock_valide|default:0 }} / {{ m.seuil_alerte }}</span></li>{% empty %}<li class="vide">Aucune alerte.</li>{% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="col-lg-4 reveal">
+    <div class="card h-100">
+      <div class="card-header"><svg class="ico"><use href="#i-clock"/></svg> Péremptions à 30 jours</div>
+      <ul class="list-alertes">
+        {% for l in peremptions_proches %}<li><span>{{ l.medicament.nom }}</span><span class="badge bg-info">{{ l.date_peremption|date:'d/m/Y' }} · {{ l.quantite }}</span></li>{% empty %}<li class="vide">Aucune.</li>{% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="col-lg-4 reveal">
+    <div class="card h-100">
+      <div class="card-header"><svg class="ico"><use href="#i-alert"/></svg> Lots périmés en stock</div>
+      <ul class="list-alertes">
+        {% for l in lots_perimes %}<li><span>{{ l.medicament.nom }}</span><span class="badge bg-danger">{{ l.date_peremption|date:'d/m/Y' }} · {{ l.quantite }}</span></li>{% empty %}<li class="vide">Aucun.</li>{% endfor %}
+      </ul>
+    </div>
+  </div>
 </div>
 
-<div class="row g-3 mt-2">
-  <div class="col-lg-6"><div class="card shadow-sm"><div class="card-header">Produits les plus vendus</div><table class="table table-sm mb-0"><tbody>
-    {% for p in top_produits %}<tr><td>{{ p.medicament__nom }}</td><td class="text-end">{{ p.total_vendu }}</td></tr>{% empty %}<tr><td class="text-muted">Aucune vente.</td></tr>{% endfor %}
-  </tbody></table></div></div>
-  <div class="col-lg-6"><div class="card shadow-sm"><div class="card-header">Documents PDF</div><div class="card-body d-flex flex-wrap gap-2">
-    <a class="btn btn-sm btn-outline-primary" href="{% url 'rapports:rapport_stock' %}" target="_blank">Rapport stock</a>
-    <a class="btn btn-sm btn-outline-primary" href="{% url 'rapports:rapport_peremptions' %}" target="_blank">Péremptions</a>
-    <a class="btn btn-sm btn-outline-primary" href="{% url 'rapports:rapport_ventes' %}" target="_blank">Ventes (30 j)</a>
-    <a class="btn btn-sm btn-outline-primary" href="{% url 'rapports:rapport_achats' %}" target="_blank">Achats (30 j)</a>
-    <form method="get" action="{% url 'rapports:rapport_ventes' %}" target="_blank" class="d-flex gap-1">
-      <input class="form-control form-control-sm" type="date" name="debut"><input class="form-control form-control-sm" type="date" name="fin"><button class="btn btn-sm btn-primary">Ventes sur période</button>
-    </form>
-  </div></div></div>
+<div class="row g-3 mt-1">
+  <div class="col-lg-6 reveal">
+    <div class="card h-100">
+      <div class="card-header"><svg class="ico"><use href="#i-trend"/></svg> Produits les plus vendus</div>
+      <div class="table-responsive">
+        <table class="table table-sm mb-0"><tbody>
+          {% for p in top_produits %}<tr><td>{{ p.medicament__nom }}</td><td class="text-end"><span class="badge bg-primary">{{ p.total_vendu }}</span></td></tr>{% empty %}<tr><td class="text-muted">Aucune vente.</td></tr>{% endfor %}
+        </tbody></table>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6 reveal">
+    <div class="card h-100">
+      <div class="card-header"><svg class="ico"><use href="#i-file"/></svg> Documents PDF</div>
+      <div class="card-body">
+        <div class="pdf-actions">
+          <a class="btn btn-sm btn-outline-primary" href="{% url 'rapports:rapport_stock' %}" target="_blank">Rapport stock</a>
+          <a class="btn btn-sm btn-outline-primary" href="{% url 'rapports:rapport_peremptions' %}" target="_blank">Péremptions</a>
+          <a class="btn btn-sm btn-outline-primary" href="{% url 'rapports:rapport_ventes' %}" target="_blank">Ventes (30 j)</a>
+          <a class="btn btn-sm btn-outline-primary" href="{% url 'rapports:rapport_achats' %}" target="_blank">Achats (30 j)</a>
+        </div>
+        <form method="get" action="{% url 'rapports:rapport_ventes' %}" target="_blank" class="period-form">
+          <input class="form-control" type="date" name="debut" aria-label="Date de début">
+          <input class="form-control" type="date" name="fin" aria-label="Date de fin">
+          <button class="btn btn-sm btn-primary">Ventes sur période</button>
+        </form>
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}
