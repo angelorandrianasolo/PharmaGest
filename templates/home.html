@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}Accueil — PharmaGest{% endblock %}
+{% block content %}
+<div class="row">
+  <div class="col-lg-8">
+    <h1 class="h3 mb-3">Bienvenue sur PharmaGest</h1>
+    <p class="text-muted">Gestion centralisée des médicaments, des achats, des ventes et des stocks.</p>
+    <div class="row g-3 mt-2">
+      {% if perms.ventes.add_vente %}
+      <div class="col-md-4"><a class="btn btn-primary w-100" href="{% url 'ventes:caisse' %}">Ouvrir la caisse</a></div>
+      {% endif %}
+      {% if perms.medicaments.view_medicament %}
+      <div class="col-md-4"><a class="btn btn-outline-primary w-100" href="{% url 'medicaments:liste' %}">Catalogue des médicaments</a></div>
+      {% endif %}
+      {% if perms.ventes.consulter_rapports %}
+      <div class="col-md-4"><a class="btn btn-outline-primary w-100" href="{% url 'rapports:dashboard' %}">Tableau de bord</a></div>
+      {% endif %}
+    </div>
+  </div>
+  <div class="col-lg-4">
+    {% include 'medicaments/apercu_stock.html' %}
+  </div>
+</div>
+{% endblock %}
