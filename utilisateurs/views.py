@@ -158,7 +158,16 @@ class PhotoSuppressionView(LoginRequiredMixin, View):
         return redirect("utilisateurs:profil")
 
 
-class UtilisateurListView(PermissionRequiredMixin, ListView):
+class AdministrationUtilisateursMixin(PermissionRequiredMixin):
+    """Refus explicite pour les vues de gestion des comptes."""
+
+    permission_denied_message = (
+        "La gestion des comptes est réservée aux administrateurs. "
+        "Pour modifier vos propres informations, ouvrez votre profil."
+    )
+
+
+class UtilisateurListView(AdministrationUtilisateursMixin, ListView):
     model = Utilisateur
     template_name = "utilisateurs/utilisateur_list.html"
     context_object_name = "utilisateurs"
@@ -166,7 +175,7 @@ class UtilisateurListView(PermissionRequiredMixin, ListView):
     permission_required = "utilisateurs.view_utilisateur"
 
 
-class UtilisateurCreateView(PermissionRequiredMixin, CreateView):
+class UtilisateurCreateView(AdministrationUtilisateursMixin, CreateView):
     model = Utilisateur
     form_class = UtilisateurCreationForm
     template_name = "utilisateurs/utilisateur_form.html"
@@ -174,7 +183,7 @@ class UtilisateurCreateView(PermissionRequiredMixin, CreateView):
     permission_required = "utilisateurs.add_utilisateur"
 
 
-class UtilisateurUpdateView(PermissionRequiredMixin, UpdateView):
+class UtilisateurUpdateView(AdministrationUtilisateursMixin, UpdateView):
     model = Utilisateur
     form_class = UtilisateurModificationForm
     template_name = "utilisateurs/utilisateur_form.html"
@@ -196,7 +205,7 @@ class UtilisateurUpdateView(PermissionRequiredMixin, UpdateView):
         return reponse
 
 
-class BasculerActifView(PermissionRequiredMixin, View):
+class BasculerActifView(AdministrationUtilisateursMixin, View):
     permission_required = "utilisateurs.change_utilisateur"
     http_method_names = ["post"]
 

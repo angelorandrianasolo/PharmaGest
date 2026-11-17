@@ -13,7 +13,7 @@ Fonctionnalités principales :
 - tableau de bord, alertes de rupture/péremption et documents **PDF ReportLab** ;
 - rôles et permissions, journal d'audit, sauvegarde/restauration ;
 - inscription publique (compte à activer), profil consultable et modifiable avec photo de profil et confirmation du mot de passe ;
-- jeu de données fictives et 144 tests automatisés (au moins 10 par fonctionnalité).
+- jeu de données fictives et 148 tests automatisés (au moins 10 par fonctionnalité).
 
 ---
 
@@ -76,7 +76,7 @@ sa propre page.
 # Vérification du projet
 docker compose run --rm web python manage.py check
 
-# Tests automatisés (144 tests — au moins 10 par fonctionnalité)
+# Tests automatisés (148 tests — au moins 10 par fonctionnalité)
 docker compose run --rm web python manage.py test
 
 # Contrôle de cohérence stock <> mouvements

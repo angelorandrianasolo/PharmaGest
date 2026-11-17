@@ -104,3 +104,64 @@ class LecturePermissionsTests(BaseTestCase):
                 reponse = self.client.get(reverse(route))
                 self.assertEqual(reponse.status_code, 302)
                 self.assertIn(reverse('utilisateurs:login'), reponse['Location'])
+
+
+class GestionComptesTests(BaseTestCase):
+    """La gestion des comptes reste administrative, mais le refus est explicite."""
+
+    def test_administrateur_peut_modifier_un_compte(self):
+        admin = Fabrique.utilisateur('admin-comptes', 'administrateur')
+        cible = Fabrique.utilisateur('cible-comptes', 'pharmacien')
+        self.client.force_login(admin)
+        url = reverse('utilisateurs:modifier', args=[cible.pk])
+        self.assertEqual(self.client.get(url).status_code, 200)
+        reponse = self.client.post(url, {
+            'username': cible.username,
+            'first_name': 'Jean',
+            'last_name': cible.last_name,
+            'email': cible.email,
+            'telephone': cible.telephone,
+            'role': cible.role,
+            'is_active': 'on',
+            'groups': [g.pk for g in cible.groups.all()],
+            'mot_de_passe': 'testpass123',
+        })
+        self.assertRedirects(reponse, reverse('utilisateurs:liste'))
+        cible.refresh_from_db()
+        self.assertEqual(cible.first_name, 'Jean')
+
+    def test_non_administrateur_recoit_un_refus_explicite(self):
+        pharmacien = Fabrique.utilisateur('pharmacien-refus', 'pharmacien')
+        cible = Fabrique.utilisateur('cible-refus', 'caissier')
+        self.client.force_login(pharmacien)
+        reponse = self.client.get(reverse('utilisateurs:modifier', args=[cible.pk]))
+        self.assertEqual(reponse.status_code, 403)
+        contenu = reponse.content.decode()
+        self.assertIn('La gestion des comptes est réservée aux administrateurs', contenu)
+        self.assertIn('Modifier mon profil', contenu)
+
+    def test_bouton_modifier_masque_sans_permission(self):
+        lecteur = Fabrique.utilisateur('lecteur-comptes', 'inscrit')
+        lecteur.user_permissions.add(
+            Permission.objects.get(codename='view_utilisateur')
+        )
+        cible = Fabrique.utilisateur('cible-lecture', 'caissier')
+        self.client.force_login(lecteur)
+        reponse = self.client.get(reverse('utilisateurs:liste'))
+        self.assertEqual(reponse.status_code, 200)
+        self.assertNotIn(
+            reverse('utilisateurs:modifier', args=[cible.pk]),
+            reponse.content.decode(),
+        )
+
+    def test_desactivation_de_son_propre_compte_reste_refusee(self):
+        admin = Fabrique.utilisateur('admin-self', 'administrateur')
+        self.client.force_login(admin)
+        reponse = self.client.post(
+            reverse('utilisateurs:basculer_actif', args=[admin.pk])
+        )
+        self.assertEqual(reponse.status_code, 403)
+        self.assertIn(
+            'vous ne pouvez pas désactiver votre propre compte',
+            reponse.content.decode().lower(),
+        )

@@ -1,0 +1,25 @@
+{% load static %}<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Accès refusé — PharmaGest</title>
+  <link rel="icon" href="{% static 'images/logo.svg' %}" type="image/svg+xml">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="{% static 'css/app.css' %}" rel="stylesheet">
+</head>
+<body class="auth-page">
+  <div class="auth-card reveal">
+    <img class="auth-card-logo" src="{% static 'images/logo.svg' %}" alt="PharmaGest">
+    <h1>Accès refusé</h1>
+    <p class="auth-card-sub">
+      {% if exception %}{{ exception }}{% else %}Vous n'avez pas l'autorisation nécessaire pour accéder à cette page.{% endif %}
+    </p>
+    <div class="d-grid gap-2 mt-4">
+      <a class="btn btn-primary auth-btn" href="{% url 'utilisateurs:profil' %}">Modifier mon profil</a>
+      <a class="btn btn-outline-secondary auth-btn" href="{% url 'home' %}">Retour à l'accueil</a>
+    </div>
+    <p class="auth-security">Chaque accès est attribué et tracé selon votre rôle.</p>
+  </div>
+</body>
+</html>
