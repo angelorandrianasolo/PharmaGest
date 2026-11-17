@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1 class="h4">{{ fournisseur.nom }}</h1>
+<p>Adresse : {{ fournisseur.adresse|default:'-' }} — Tél : {{ fournisseur.telephone|default:'-' }} — E-mail : {{ fournisseur.email|default:'-' }}</p>
+<p>Identifiant fiscal : {{ fournisseur.identifiant_fiscal|default:'-' }} — Contact : {{ fournisseur.contact_principal|default:'-' }}</p>
+<h2 class="h6">Historique des commandes</h2>
+<table class="table table-sm"><thead><tr><th>Numéro</th><th>Date</th><th>Statut</th><th>Total</th></tr></thead><tbody>
+{% for c in commandes %}<tr><td><a href="{% url 'achats:commande_detail' c.pk %}">{{ c.numero }}</a></td><td>{{ c.date_commande|date:'d/m/Y' }}</td><td>{{ c.get_statut_display }}</td><td>{{ c.total }} Ar</td></tr>{% endfor %}
+</tbody></table>
+{% endblock %}

@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1 class="h4">{{ client }}</h1>
+<p>Téléphone : {{ client.telephone|default:'-' }} — E-mail : {{ client.email|default:'-' }}</p>
+<h2 class="h6">Historique des ventes</h2>
+<table class="table table-sm"><thead><tr><th>Numéro</th><th>Date</th><th>Total</th><th>Statut</th></tr></thead><tbody>
+{% for v in ventes %}<tr><td><a href="{% url 'ventes:detail' v.pk %}">{{ v.numero }}</a></td><td>{{ v.date|date:'d/m/Y H:i' }}</td><td>{{ v.total }} Ar</td><td>{{ v.get_statut_display }}</td></tr>{% endfor %}
+</tbody></table>
+{% endblock %}
