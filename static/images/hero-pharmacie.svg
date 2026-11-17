@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" role="img" aria-label="Illustration pharmacie : traçabilité des lots et indicateurs">
+  <defs>
+    <linearGradient id="fond" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0c302c"/>
+      <stop offset="1" stop-color="#155048"/>
+    </linearGradient>
+    <radialGradient id="halo" cx="38%" cy="45%" r="55%">
+      <stop offset="0" stop-color="#2aa58d" stop-opacity=".55"/>
+      <stop offset="1" stop-color="#2aa58d" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="croix" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#d8efe6"/>
+    </linearGradient>
+    <pattern id="points" width="22" height="22" patternUnits="userSpaceOnUse">
+      <circle cx="1.5" cy="1.5" r="1.2" fill="#ffffff" opacity=".13"/>
+    </pattern>
+    <filter id="ombre" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="14" stdDeviation="16" flood-color="#031b18" flood-opacity=".45"/>
+    </filter>
+  </defs>
+
+  <rect width="800" height="500" rx="26" fill="url(#fond)"/>
+  <rect width="800" height="500" rx="26" fill="url(#halo)"/>
+  <rect width="800" height="500" rx="26" fill="url(#points)"/>
+
+  <!-- Disque central : croix pharmaceutique -->
+  <g filter="url(#ombre)">
+    <circle cx="296" cy="252" r="138" fill="#f4faf7" opacity=".08"/>
+    <circle cx="296" cy="252" r="112" fill="#f7fbf9" opacity=".1"/>
+    <circle cx="296" cy="252" r="86" fill="url(#croix)"/>
+    <path d="M266 190h60v44h44v60h-44v44h-60v-44h-44v-60h44z" fill="#0f3b35"/>
+  </g>
+  <circle cx="296" cy="252" r="132" fill="none" stroke="#f0bd7e" stroke-opacity=".55" stroke-width="2" stroke-dasharray="5 12"/>
+  <circle cx="296" cy="252" r="160" fill="none" stroke="#ffffff" stroke-opacity=".12" stroke-width="1.5"/>
+
+  <!-- Fiche de suivi / indicateurs -->
+  <g filter="url(#ombre)">
+    <rect x="462" y="96" width="264" height="300" rx="20" fill="#f7fbf9"/>
+    <rect x="486" y="124" width="104" height="10" rx="5" fill="#0f3b35"/>
+    <rect x="486" y="146" width="164" height="7" rx="3.5" fill="#cbd9d3"/>
+    <rect x="486" y="162" width="128" height="7" rx="3.5" fill="#dbe6e1"/>
+
+    <rect x="486" y="196" width="92" height="62" rx="12" fill="#e6f3ee"/>
+    <rect x="592" y="196" width="110" height="62" rx="12" fill="#fdf0df"/>
+    <rect x="502" y="210" width="44" height="6" rx="3" fill="#1d9683"/>
+    <rect x="608" y="210" width="52" height="6" rx="3" fill="#d98a3d"/>
+    <rect x="502" y="226" width="60" height="12" rx="4" fill="#0f3b35"/>
+    <rect x="608" y="226" width="42" height="12" rx="4" fill="#b96d24"/>
+
+    <path d="M486 320l36-34 32 18 42-52 34 24 48-58" fill="none" stroke="#1d9683" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="486" cy="320" r="5" fill="#1d9683"/>
+    <circle cx="678" cy="218" r="5" fill="#d98a3d"/>
+    <rect x="486" y="352" width="216" height="7" rx="3.5" fill="#dbe6e1"/>
+    <rect x="486" y="368" width="158" height="7" rx="3.5" fill="#e7efeb"/>
+  </g>
+
+  <!-- Gélules flottantes -->
+  <g transform="translate(118 78) rotate(-22)">
+    <rect x="0" y="0" width="92" height="38" rx="19" fill="#f0bd7e"/>
+    <path d="M46 0h27a19 19 0 0 1 0 38H46z" fill="#0f3b35"/>
+    <path d="M46 0v38" stroke="#f7fbf9" stroke-opacity=".55" stroke-width="2"/>
+  </g>
+  <g transform="translate(112 390) rotate(14)">
+    <rect x="0" y="0" width="78" height="32" rx="16" fill="#f7fbf9"/>
+    <path d="M39 0h23a16 16 0 0 1 0 32H39z" fill="#1d9683"/>
+    <path d="M39 0v32" stroke="#0f3b35" stroke-opacity=".25" stroke-width="2"/>
+  </g>
+
+  <!-- Menus de gravure : lot / FEFO -->
+  <g fill="#f0bd7e" font-family="monospace" font-size="13" opacity=".8">
+    <text x="108" y="452">LOT · FEFO · TRACÉ</text>
+  </g>
+</svg>

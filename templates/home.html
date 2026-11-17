@@ -24,8 +24,8 @@
     </div>
   </div>
   <div class="hero-art">
-    <img src="{% static 'images/maquettes/couverture.jpg' %}" alt="Aperçu graphique du projet PharmaGest">
-    <div class="hero-badge"><svg class="ico"><use href="#i-spark"/></svg> Visuels du cahier des charges</div>
+    <img src="{% static 'images/hero-pharmacie.svg' %}" alt="Illustration des lots, de la traçabilité et des indicateurs PharmaGest">
+    <div class="hero-badge"><svg class="ico"><use href="#i-shield"/></svg> Traçabilité · FEFO · Sécurité</div>
   </div>
 </section>
 
@@ -45,7 +45,7 @@
     <svg class="ico arrow"><use href="#i-arrow"/></svg>
   </a>
   {% endif %}
-  {% if perms.stock.view_lotstock %}
+  {% if perms.stock.view_lotstock or perms.stock.view_mouvementstock %}
   <a class="action-card" href="{% url 'stock:lots' %}">
     <span class="action-icon info"><svg class="ico"><use href="#i-box"/></svg></span>
     <span><strong>Stocks</strong><small>Lots et péremptions</small></span>
@@ -68,34 +68,81 @@
   {% endif %}
 </div>
 
+{% if stats_du_jour or receptions_du_jour is not None %}
+<div class="section-head reveal"><h2>Aujourd’hui</h2><span>indicateurs de la journée</span></div>
+<div class="stat-grid reveal">
+  {% if stats_du_jour %}
+  <div class="stat-card">
+    <div class="stat-icon"><svg class="ico"><use href="#i-receipt"/></svg></div>
+    <div class="stat-label">Ventes validées</div>
+    <div class="stat-value">{{ stats_du_jour.ventes }}</div>
+    <div class="stat-note">{{ stats_du_jour.en_attente }} en attente de paiement</div>
+  </div>
+  <div class="stat-card amber">
+    <div class="stat-icon"><svg class="ico"><use href="#i-trend"/></svg></div>
+    <div class="stat-label">Chiffre d’affaires</div>
+    <div class="stat-value">{{ stats_du_jour.chiffre_affaires|floatformat:0 }}</div>
+    <div class="stat-note">Ariary · ventes confirmées</div>
+  </div>
+  {% endif %}
+  {% if receptions_du_jour is not None %}
+  <div class="stat-card info">
+    <div class="stat-icon"><svg class="ico"><use href="#i-truck"/></svg></div>
+    <div class="stat-label">Réceptions</div>
+    <div class="stat-value">{{ receptions_du_jour }}</div>
+    <div class="stat-note">entrées de stock aujourd’hui</div>
+  </div>
+  {% endif %}
+  <div class="stat-card danger">
+    <div class="stat-icon"><svg class="ico"><use href="#i-alert"/></svg></div>
+    <div class="stat-label">Alertes de stock</div>
+    <div class="stat-value">{{ alertes|length }}</div>
+    <div class="stat-note">produits sous le seuil ou épuisés</div>
+  </div>
+</div>
+{% endif %}
+
 <div class="row g-3 mt-1">
   <div class="col-lg-5 reveal">{% include 'medicaments/apercu_stock.html' %}</div>
   <div class="col-lg-7 reveal">
     <div class="card h-100">
-      <div class="card-header"><svg class="ico"><use href="#i-file"/></svg> Références visuelles du cahier des charges</div>
+      <div class="card-header"><svg class="ico"><use href="#i-trend"/></svg> Activité récente</div>
       <div class="card-body">
-        <p class="text-muted small mb-3">Les maquettes fournies dans le cahier sont conservées ici comme référence de conception. Cliquez sur un aperçu pour l’agrandir.</p>
-        <div class="maquette-strip">
-          <a class="maquette" href="{% static 'images/maquettes/tableau-de-bord.jpg' %}" target="_blank" rel="noopener">
-            <img src="{% static 'images/maquettes/tableau-de-bord.jpg' %}" alt="Maquette du tableau de bord" loading="lazy">
-            <div><strong>Tableau de bord</strong><small>Indicateurs et alertes</small></div>
-          </a>
-          <a class="maquette" href="{% static 'images/maquettes/medicaments.jpg' %}" target="_blank" rel="noopener">
-            <img src="{% static 'images/maquettes/medicaments.jpg' %}" alt="Maquette de la gestion des médicaments" loading="lazy">
-            <div><strong>Médicaments</strong><small>Liste avec photos</small></div>
-          </a>
-          <a class="maquette" href="{% static 'images/maquettes/vente-caisse.jpg' %}" target="_blank" rel="noopener">
-            <img src="{% static 'images/maquettes/vente-caisse.jpg' %}" alt="Maquette de l’interface de caisse" loading="lazy">
-            <div><strong>Vente &amp; caisse</strong><small>Panier et encaissement</small></div>
-          </a>
-          <a class="maquette" href="{% static 'images/maquettes/stocks-rapports.jpg' %}" target="_blank" rel="noopener">
-            <img src="{% static 'images/maquettes/stocks-rapports.jpg' %}" alt="Maquette des stocks et achats" loading="lazy">
-            <div><strong>Stocks &amp; achats</strong><small>Lots et réceptions</small></div>
-          </a>
-          <a class="maquette" href="{% static 'images/maquettes/presentation.jpg' %}" target="_blank" rel="noopener">
-            <img src="{% static 'images/maquettes/presentation.jpg' %}" alt="Graphiques statistiques du projet" loading="lazy">
-            <div><strong>Graphiques</strong><small>Statistiques et rapports</small></div>
-          </a>
+        <div class="activite-grid">
+          <div class="activite-col">
+            <h3 class="activite-title">Dernières ventes</h3>
+            <ul class="list-activite">
+              {% for vente in ventes_recentes %}
+              <li>
+                <a href="{% url 'ventes:detail' vente.pk %}">{{ vente.numero }}</a>
+                <span class="activite-valeur">{{ vente.total|floatformat:0 }} Ar</span>
+                <small>{{ vente.date|date:'d/m H:i' }} · {{ vente.get_statut_display }}</small>
+              </li>
+              {% empty %}<li class="activite-vide">Aucune vente enregistrée.</li>{% endfor %}
+            </ul>
+          </div>
+          <div class="activite-col">
+            <h3 class="activite-title">À traiter</h3>
+            <ul class="list-activite">
+              {% for lot in lots_a_surveiller %}
+              <li>
+                <a href="{% url 'medicaments:detail' lot.medicament.pk %}">{{ lot.medicament.nom }}</a>
+                <span class="badge bg-warning">{{ lot.date_peremption|date:'d/m/Y' }}</span>
+                <small>Lot {{ lot.numero_lot }} · {{ lot.quantite }} unité(s) restante(s)</small>
+              </li>
+              {% endfor %}
+              {% for paiement in paiements_en_attente %}
+              <li>
+                <a href="{% url 'ventes:detail' paiement.vente.pk %}">{{ paiement.vente.numero }}</a>
+                <span class="badge bg-info">Paiement</span>
+                <small>{{ paiement.get_mode_display }} · {{ paiement.montant|floatformat:0 }} Ar</small>
+              </li>
+              {% endfor %}
+              {% if not lots_a_surveiller and not paiements_en_attente %}
+              <li class="activite-vide">Aucune échéance ni paiement en attente.</li>
+              {% endif %}
+            </ul>
+          </div>
         </div>
       </div>
     </div>
