@@ -7,6 +7,7 @@ app_name = 'ventes'
 urlpatterns = [
     path('', views.VenteListView.as_view(), name='liste'),
     path('caisse/', views.CaisseView.as_view(), name='caisse'),
+    path('caisse/recherche/', views.RechercheMedicamentView.as_view(), name='recherche_produit'),
     path('<int:pk>/', views.VenteDetailView.as_view(), name='detail'),
     path('<int:pk>/paiement/confirmer/', views.ConfirmerPaiementView.as_view(), name='paiement_confirmer'),
     path('<int:pk>/retour/', views.CreerRetourView.as_view(), name='retour'),

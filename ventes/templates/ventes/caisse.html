@@ -7,11 +7,11 @@
   <div>
     <span class="eyebrow">Point de vente</span>
     <h1>Nouvelle vente</h1>
-    <p>Choisissez les produits et les quantités. Les lots sont attribués automatiquement selon la règle FEFO.</p>
+    <p>Recherchez un produit, ajustez les quantités et vérifiez le total avant de valider.</p>
   </div>
 </div>
 
-<form method="post" class="card reveal">
+<form method="post" class="card reveal" id="form-caisse">
   {% csrf_token %}
   <input type="hidden" name="idempotency_key" value="{{ idempotency_key }}">
 
@@ -29,38 +29,322 @@
   </div>
 
   <div class="caisse-section">
-    <h2 class="caisse-section-title"><span class="num">2</span> Produits vendus</h2>
+    <h2 class="caisse-section-title"><span class="num">2</span> Rechercher un produit</h2>
+    <label class="form-label" for="recherche-produit">Nom, dénomination ou code-barres (scan)</label>
+    <div class="recherche-champ">
+      <svg class="ico"><use href="#i-pill"/></svg>
+      <input type="search" id="recherche-produit" class="form-control" placeholder="Ex. Paracétamol ou 1234567890123" autocomplete="off" aria-describedby="recherche-aide">
+      <span class="recherche-spinner" id="recherche-spinner" hidden>Recherche…</span>
+    </div>
+    <small id="recherche-aide" class="form-text text-muted">Saisissez au moins 2 caractères, ou scannez le code-barres puis appuyez sur Entrée.</small>
+    <div id="resultats-recherche" class="resultats-recherche" hidden></div>
+  </div>
+
+  <div class="caisse-section">
+    <h2 class="caisse-section-title"><span class="num">3</span> Panier</h2>
     {{ formset.management_form }}
-    {% for sform in formset %}
-      <div class="ligne">
-        <span class="ligne-num">{{ forloop.counter }}</span>
-        <div class="ligne-champs">
-          {% for field in sform %}
-            {% if field.field.widget.input_type == 'hidden' %}
-              {{ field }}
-            {% elif field.name == 'DELETE' %}
-              <div class="form-check align-self-end pb-2">
-                {{ field }}<label class="form-check-label small text-muted" for="{{ field.id_for_label }}">Retirer cette ligne</label>
-              </div>
-            {% else %}
-              <div>
-                <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-                {{ field }}{{ field.errors }}
-              </div>
-            {% endif %}
-          {% endfor %}
+    <div id="erreurs-panier" class="erreurs-panier">{{ formset.non_form_errors }}</div>
+    <div id="panier-lignes">
+      {% for sform in formset %}
+        <div class="ligne ligne-fallback">
+          <span class="ligne-num">{{ forloop.counter }}</span>
+          <div class="ligne-champs">
+            {% for field in sform %}
+              {% if field.field.widget.input_type == 'hidden' %}
+                {{ field }}
+              {% elif field.name == 'DELETE' %}
+                <div class="form-check align-self-end pb-2">
+                  {{ field }}<label class="form-check-label small text-muted" for="{{ field.id_for_label }}">Retirer cette ligne</label>
+                </div>
+              {% else %}
+                <div>
+                  <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                  {{ field }}{{ field.errors }}
+                </div>
+              {% endif %}
+            {% endfor %}
+          </div>
         </div>
-      </div>
-    {% endfor %}
-    {{ formset.non_form_errors }}
+      {% endfor %}
+    </div>
+    <p id="panier-vide" class="panier-vide">Aucun produit ajouté. Utilisez la recherche ci-dessus.</p>
+  </div>
+
+  <div class="caisse-total">
+    <div>
+      <span class="eyebrow">Total général</span>
+      <strong id="total-panier">0 Ar</strong>
+      <small id="detail-panier">0 article(s)</small>
+    </div>
+    <span class="caisse-total-note">Le prix appliqué est celui enregistré au moment de la vente.</span>
   </div>
 
   <div class="caisse-submit">
     <p class="mb-0 note-fefo" style="margin-top:0">
       <svg class="ico"><use href="#i-shield"/></svg>
-      <span>Les lots périmés ou bloqués sont exclus. Les paiements mobile money restent en attente de confirmation.</span>
+      <span>Les lots périmés ou bloqués sont exclus. Un lot peut être choisi explicitement ; sinon la règle FEFO s’applique. Les paiements mobile money restent en attente de confirmation.</span>
     </p>
     <button class="btn btn-primary" type="submit">Valider la vente <svg class="ico" style="width:16px;height:16px;display:inline;vertical-align:-3px"><use href="#i-arrow"/></svg></button>
   </div>
 </form>
+{% endblock %}
+
+{% block scripts %}
+{{ panier_initial|json_script:"panier-initial" }}
+<script>
+(function () {
+  const form = document.getElementById('form-caisse');
+  if (!form) return;
+  const prefix = '{{ formset.prefix|escapejs }}';
+  const urlRecherche = '{% url "ventes:recherche_produit" %}';
+  const champ = document.getElementById('recherche-produit');
+  const resultats = document.getElementById('resultats-recherche');
+  const spinner = document.getElementById('recherche-spinner');
+  const lignes = document.getElementById('panier-lignes');
+  const vide = document.getElementById('panier-vide');
+  const erreurs = document.getElementById('erreurs-panier');
+  const totalEl = document.getElementById('total-panier');
+  const detailEl = document.getElementById('detail-panier');
+  const totalForms = form.querySelector('[name="' + prefix + '-TOTAL_FORMS"]');
+  const initialForms = form.querySelector('[name="' + prefix + '-INITIAL_FORMS"]');
+  if (initialForms) initialForms.value = '0';
+
+  let panier = [];
+  let temporisation = null;
+  let derniersResultats = [];
+
+  const prix = (produit) => Number(String(produit.prix).replace(',', '.'));
+  const argent = (valeur) => new Intl.NumberFormat('fr-FR').format(valeur) + ' Ar';
+
+  function quantiteMax(item) {
+    if (item.lot) {
+      const lot = (item.produit.lots || []).find((l) => String(l.id) === String(item.lot));
+      if (lot) return Math.max(1, lot.quantite);
+    }
+    return Math.max(1, item.produit.stock || 1);
+  }
+
+  function mettreAJourTotal() {
+    const total = panier.reduce((somme, item) => somme + prix(item.produit) * item.quantite, 0);
+    const articles = panier.reduce((somme, item) => somme + item.quantite, 0);
+    totalEl.textContent = argent(total);
+    detailEl.textContent = articles + ' article(s)';
+  }
+
+  function rendu() {
+    lignes.innerHTML = '';
+    panier.forEach((item, index) => {
+      const ligne = document.createElement('div');
+      ligne.className = 'ligne panier-ligne';
+      ligne.dataset.index = String(index);
+      ligne.innerHTML =
+        '<span class="ligne-num"></span>' +
+        '<div class="panier-produit"><strong class="panier-nom"></strong>' +
+        '<small class="panier-meta"></small><small class="panier-lot"></small></div>' +
+        '<div class="panier-qte"><button type="button" class="btn-qte" data-action="moins" aria-label="Diminuer la quantité">−</button>' +
+        '<input type="number" class="form-control form-control-sm qte-input" min="1" step="1">' +
+        '<button type="button" class="btn-qte" data-action="plus" aria-label="Augmenter la quantité">+</button></div>' +
+        '<div class="panier-sous-total"></div>' +
+        '<select class="form-select form-select-sm champ-lot"></select>' +
+        '<input type="hidden" class="champ-medicament">' +
+        '<button type="button" class="btn-retirer" data-action="retirer" aria-label="Retirer du panier">×</button>';
+
+      ligne.querySelector('.ligne-num').textContent = String(index + 1);
+      ligne.querySelector('.panier-nom').textContent = item.produit.nom;
+      ligne.querySelector('.panier-meta').textContent =
+        [item.produit.dosage, item.produit.presentation].filter(Boolean).join(' · ') ||
+        (item.produit.code_barres || 'Médicament');
+
+      const select = ligne.querySelector('.champ-lot');
+      select.name = prefix + '-' + index + '-lot';
+      const auto = document.createElement('option');
+      auto.value = '';
+      auto.textContent = 'Allocation FEFO automatique';
+      select.appendChild(auto);
+      (item.produit.lots || []).forEach((lot) => {
+        const option = document.createElement('option');
+        option.value = String(lot.id);
+        option.textContent = 'Lot ' + lot.numero + ' · exp. ' + lot.peremption +
+          ' · ' + lot.quantite + (lot.suggere ? ' · suggéré' : '');
+        select.appendChild(option);
+      });
+      select.value = item.lot || '';
+
+      const quantite = ligne.querySelector('.qte-input');
+      quantite.name = prefix + '-' + index + '-quantite';
+      quantite.min = '1';
+      quantite.max = String(quantiteMax(item));
+      quantite.value = String(item.quantite);
+
+      const cache = ligne.querySelector('.champ-medicament');
+      cache.name = prefix + '-' + index + '-medicament';
+      cache.value = String(item.produit.id);
+
+      ligne.querySelector('.panier-sous-total').textContent = argent(prix(item.produit) * item.quantite);
+      lignes.appendChild(ligne);
+    });
+    totalForms.value = String(panier.length);
+    vide.hidden = panier.length > 0;
+    mettreAJourTotal();
+  }
+
+  function ajouter(produit, quantiteInitiale, lotInitial) {
+    if (!produit || !(produit.stock > 0)) {
+      erreurs.textContent = 'Ce médicament n’a pas de stock délivrable.';
+      return;
+    }
+    erreurs.textContent = '';
+    const lot = lotInitial !== undefined && lotInitial !== null && lotInitial !== ''
+      ? String(lotInitial)
+      : ((produit.lots || [])[0] ? String(produit.lots[0].id) : '');
+    const existant = panier.find((item) => String(item.produit.id) === String(produit.id) && item.lot === lot);
+    if (existant) {
+      const maximum = quantiteMax({ produit: produit, lot: lot });
+      existant.quantite = Math.min(maximum, existant.quantite + (quantiteInitiale || 1));
+    } else {
+      panier.push({
+        produit: produit,
+        quantite: Math.min(quantiteMax({ produit: produit, lot: lot }), quantiteInitiale || 1),
+        lot: lot,
+      });
+    }
+    rendu();
+  }
+
+  function afficherResultats(items) {
+    derniersResultats = items;
+    resultats.innerHTML = '';
+    items.forEach((produit) => {
+      const bouton = document.createElement('button');
+      bouton.type = 'button';
+      bouton.className = 'resultat-produit';
+      bouton.innerHTML = '<strong class="resultat-nom"></strong>' +
+        '<small class="resultat-meta"></small><span class="resultat-prix"></span>';
+      bouton.querySelector('.resultat-nom').textContent = produit.nom;
+      bouton.querySelector('.resultat-meta').textContent =
+        [produit.dosage, produit.presentation].filter(Boolean).join(' · ') +
+        ' · stock ' + produit.stock;
+      bouton.querySelector('.resultat-prix').textContent = argent(prix(produit));
+      bouton.addEventListener('click', function () {
+        ajouter(produit);
+        champ.value = '';
+        resultats.hidden = true;
+        champ.focus();
+      });
+      resultats.appendChild(bouton);
+    });
+    resultats.hidden = items.length === 0;
+  }
+
+  function rechercher(terme, parIdentifiant) {
+    if (temporisation) clearTimeout(temporisation);
+    temporisation = setTimeout(function () {
+      if (!terme) { resultats.hidden = true; return; }
+      const parametre = parIdentifiant ? 'id=' : 'q=';
+      spinner.hidden = false;
+      fetch(urlRecherche + '?' + parametre + encodeURIComponent(terme), {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      })
+        .then((reponse) => reponse.json())
+        .then((donnees) => afficherResultats(donnees.resultats || []))
+        .catch(function () { erreurs.textContent = 'La recherche est momentanément indisponible.'; })
+        .finally(function () { spinner.hidden = true; });
+    }, parIdentifiant ? 0 : 180);
+  }
+
+  champ.addEventListener('input', function () {
+    rechercher(champ.value.trim(), false);
+  });
+  champ.addEventListener('keydown', function (evenement) {
+    if (evenement.key !== 'Enter') return;
+    evenement.preventDefault();
+    const terme = champ.value.trim();
+    if (!terme) return;
+    const exact = derniersResultats.find((p) => p.code_barres === terme);
+    if (exact || derniersResultats.length === 1) {
+      ajouter(exact || derniersResultats[0]);
+      champ.value = '';
+      resultats.hidden = true;
+    } else {
+      rechercher(terme, true);
+    }
+  });
+
+  lignes.addEventListener('click', function (evenement) {
+    const bouton = evenement.target.closest('[data-action]');
+    if (!bouton) return;
+    const ligne = bouton.closest('.panier-ligne');
+    const item = panier[Number(ligne.dataset.index)];
+    if (!item) return;
+    if (bouton.dataset.action === 'plus') {
+      item.quantite = Math.min(quantiteMax(item), item.quantite + 1);
+    } else if (bouton.dataset.action === 'moins') {
+      item.quantite = Math.max(1, item.quantite - 1);
+    } else if (bouton.dataset.action === 'retirer') {
+      panier.splice(Number(ligne.dataset.index), 1);
+    }
+    rendu();
+  });
+
+  lignes.addEventListener('change', function (evenement) {
+    const ligne = evenement.target.closest('.panier-ligne');
+    if (!ligne) return;
+    const item = panier[Number(ligne.dataset.index)];
+    if (!item) return;
+    if (evenement.target.classList.contains('champ-lot')) {
+      item.lot = evenement.target.value;
+    } else if (evenement.target.classList.contains('qte-input')) {
+      item.quantite = Math.max(1, Number(evenement.target.value) || 1);
+    }
+    rendu();
+  });
+
+  lignes.addEventListener('input', function (evenement) {
+    if (!evenement.target.classList.contains('qte-input')) return;
+    const ligne = evenement.target.closest('.panier-ligne');
+    const item = panier[Number(ligne.dataset.index)];
+    if (!item) return;
+    item.quantite = Math.max(1, Number(evenement.target.value) || 1);
+    mettreAJourTotal();
+  });
+
+  form.addEventListener('submit', function (evenement) {
+    if (panier.length === 0) {
+      evenement.preventDefault();
+      erreurs.textContent = 'Ajoutez au moins un produit au panier avant de valider.';
+      champ.focus();
+    }
+  });
+
+  // Restitution du panier après une erreur de validation serveur.
+  const erreursLignes = Array.from(lignes.querySelectorAll('.errorlist li'))
+    .map((element) => element.textContent.trim())
+    .filter(Boolean);
+  if (erreursLignes.length) {
+    const bloc = document.createElement('div');
+    bloc.className = 'alert alert-warning py-1 px-2 small mb-2';
+    bloc.textContent = erreursLignes.join(' · ');
+    erreurs.appendChild(bloc);
+  }
+
+  let initial = [];
+  try {
+    initial = JSON.parse(document.getElementById('panier-initial').textContent || '[]');
+  } catch (erreur) {
+    initial = [];
+  }
+  rendu();
+  initial.forEach(function (ligneInitiale) {
+    fetch(urlRecherche + '?id=' + encodeURIComponent(ligneInitiale.id), {
+      headers: { 'X-Requested-With': 'XMLHttpRequest' },
+    })
+      .then((reponse) => reponse.json())
+      .then((donnees) => {
+        const produit = (donnees.resultats || [])[0];
+        if (produit) ajouter(produit, parseInt(ligneInitiale.quantite, 10) || 1, ligneInitiale.lot);
+      })
+      .catch(function () {});
+  });
+})();
+</script>
 {% endblock %}

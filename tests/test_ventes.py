@@ -1,16 +1,20 @@
 """Tests des ventes : atomicité, idempotence, paiements et retours."""
 
+import threading
+import uuid
 from decimal import Decimal
 
 from django.core.exceptions import ValidationError
-from django.test import TestCase  # noqa: F401
+from django.core.management import call_command
+from django.db import connection
+from django.test import TestCase, TransactionTestCase  # noqa: F401
 
 from .base import BaseTestCase
 
 from core.models import JournalAudit
 from medicaments.models import Medicament
 from stock.models import LotStock, MouvementStock
-from ventes.models import Paiement, RetourVente, Vente
+from ventes.models import LigneVente, Paiement, RetourVente, Vente
 from ventes.services import (
     annuler_vente,
     confirmer_paiement,
@@ -58,8 +62,6 @@ class VenteTests(BaseTestCase):
         self.assertEqual(paiement.reference, 'MM-REF-123')
 
     def test_idempotence_empeche_les_doubles_validations(self):
-        import uuid
-
         cle = uuid.uuid4()
         lignes = [{'medicament': self.medicament, 'quantite': 2}]
         premiere = creer_vente(lignes, self.caissier, idempotency_key=cle)
@@ -145,3 +147,46 @@ class RetourVenteTests(BaseTestCase):
         self.assertEqual(MouvementStock.objects.filter(
             type=MouvementStock.Type.RETOUR
         ).count(), 0)
+
+
+class VenteConcurrenceTests(TransactionTestCase):
+    """Deux validations simultanées avec la même clé ne doivent former qu'une vente."""
+
+    def setUp(self):
+        call_command('setup_roles', verbosity=0)
+        self.medicament = Fabrique.medicament(nom='Paracétamol concurrence')
+        self.caissier = Fabrique.utilisateur('caissier-concurrence', 'caissier')
+        self.lot = Fabrique.lot(self.medicament, 'LOT-CONC', 10, jours=100)
+
+    def test_deux_threads_avec_la_meme_cle_ne_creent_qu_une_vente(self):
+        cle = uuid.uuid4()
+        lignes = [{'medicament': self.medicament, 'quantite': 2}]
+        barriere = threading.Barrier(2)
+        ventes = []
+        erreurs = []
+
+        def valider():
+            try:
+                barriere.wait(timeout=10)
+                ventes.append(creer_vente(lignes, self.caissier, idempotency_key=cle))
+            except Exception as exc:  # pragma: no cover - diagnostic de test
+                erreurs.append(exc)
+            finally:
+                connection.close()
+
+        threads = [threading.Thread(target=valider) for _ in range(2)]
+        for thread in threads:
+            thread.start()
+        for thread in threads:
+            thread.join(timeout=30)
+
+        self.assertEqual(erreurs, [], f'Erreurs inattendues : {erreurs}')
+        self.assertEqual(len(ventes), 2)
+        self.assertEqual(ventes[0].pk, ventes[1].pk)
+        self.assertEqual(Vente.objects.filter(idempotency_key=cle).count(), 1)
+        self.lot.refresh_from_db()
+        self.assertEqual(self.lot.quantite, 8)
+        self.assertEqual(
+            MouvementStock.objects.filter(type=MouvementStock.Type.SORTIE).count(), 1
+        )
+        self.assertEqual(LigneVente.objects.filter(vente=ventes[0]).count(), 1)

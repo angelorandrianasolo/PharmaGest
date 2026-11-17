@@ -1,21 +1,53 @@
 {% extends 'base.html' %}
+{% block title %}Vente {{ vente.numero }}{% endblock %}
+{% block page_title %}Vente {{ vente.numero }}{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3"><h1 class="h4">Vente {{ vente.numero }}</h1>
-<div>
-  <a class="btn btn-sm btn-outline-primary" href="{% url 'rapports:recu' vente.pk %}" target="_blank">Reçu PDF</a>
-  <a class="btn btn-sm btn-outline-primary" href="{% url 'rapports:facture' vente.pk %}" target="_blank">Facture PDF</a>
-  {% if perms.ventes.annuler_vente and vente.statut != 'annulee' %}
-  <form method="post" action="{% url 'ventes:annuler' vente.pk %}" class="d-inline">{% csrf_token %}<button class="btn btn-sm btn-outline-danger" type="submit" onclick="return confirm('Annuler définitivement cette vente ? Des retours compensatoires seront enregistrés.')">Annuler la vente</button></form>{% endif %}
-</div></div>
-<p>Date : {{ vente.date|date:'d/m/Y H:i' }} — Client : {{ vente.client|default:'Comptoir' }} — Statut : {{ vente.get_statut_display }}</p>
-<table class="table table-sm"><thead><tr><th>Médicament</th><th>Lot</th><th>Qté</th><th>P.U. appliqué</th><th>Sous-total</th><th></th></tr></thead><tbody>
-{% for l in vente.lignes.all %}<tr><td>{{ l.medicament }}</td><td>{{ l.numero_lot }}</td><td>{{ l.quantite }}</td><td>{{ l.prix_unitaire }} Ar</td><td>{{ l.sous_total }} Ar</td>
-<td>{% if perms.ventes.valider_retour %}<a class="btn btn-sm btn-outline-warning" href="{% url 'ventes:retour' l.pk %}">Retour</a>{% endif %}</td></tr>{% endfor %}
-</tbody></table>
-<p><b>Total : {{ vente.total }} Ar</b></p>
-<h2 class="h6">Paiements</h2>
-{% for p in paiements %}<p>{{ p.get_mode_display }} — {{ p.montant }} Ar — {{ p.get_statut_display }} {% if p.reference %}({{ p.reference }}){% endif %}
-{% if perms.ventes.confirmer_paiement and p.statut == 'en_attente' %}<a class="btn btn-sm btn-success" href="{% url 'ventes:paiement_confirmer' p.pk %}">Confirmer</a>{% endif %}</p>{% endfor %}
-<h2 class="h6">Retours</h2>
-<ul>{% for r in retours %}<li>{{ r }}</li>{% empty %}<li class="text-muted">Aucun retour.</li>{% endfor %}</ul>
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h4 mb-0">Vente {{ vente.numero }}</h1>
+  <div class="page-head-actions">
+    <button class="btn btn-sm btn-outline-primary" type="button" id="imprimer-recu">
+      <svg class="ico" style="width:15px;height:15px;display:inline;vertical-align:-3px"><use href="#i-receipt"/></svg> Imprimer le reçu
+    </button>
+    <a class="btn btn-sm btn-outline-primary" href="{% url 'rapports:recu' vente.pk %}" target="_blank" rel="noopener">Reçu PDF</a>
+    <a class="btn btn-sm btn-outline-primary" href="{% url 'rapports:facture' vente.pk %}" target="_blank" rel="noopener">Facture PDF</a>
+    {% if perms.ventes.annuler_vente and vente.statut != 'annulee' %}
+    <form method="post" action="{% url 'ventes:annuler' vente.pk %}" class="d-inline">{% csrf_token %}<button class="btn btn-sm btn-outline-danger" type="submit" onclick="return confirm('Annuler définitivement cette vente ? Des retours compensatoires seront enregistrés.')">Annuler la vente</button></form>
+    {% endif %}
+  </div>
+</div>
+
+<div id="recu" class="card">
+  <div class="card-body">
+    <p class="mb-1">Date : {{ vente.date|date:'d/m/Y H:i' }} — Client : {{ vente.client|default:'Comptoir' }} — Statut : {{ vente.get_statut_display }}</p>
+    <table class="table table-sm">
+      <thead><tr><th>Médicament</th><th>Lot</th><th>Qté</th><th>P.U. appliqué</th><th>Sous-total</th><th class="no-print"></th></tr></thead>
+      <tbody>
+      {% for l in vente.lignes.all %}
+        <tr>
+          <td>{{ l.medicament }}</td><td>{{ l.numero_lot }}</td><td>{{ l.quantite }}</td>
+          <td>{{ l.prix_unitaire }} Ar</td><td>{{ l.sous_total }} Ar</td>
+          <td class="no-print">{% if perms.ventes.valider_retour %}<a class="btn btn-sm btn-outline-warning" href="{% url 'ventes:retour' l.pk %}">Retour</a>{% endif %}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    <p class="h5"><b>Total : {{ vente.total }} Ar</b></p>
+
+    <h2 class="h6">Paiements</h2>
+    {% for p in paiements %}
+    <p>{{ p.get_mode_display }} — {{ p.montant }} Ar — {{ p.get_statut_display }}{% if p.reference %} ({{ p.reference }}){% endif %}
+    {% if perms.ventes.confirmer_paiement and p.statut == 'en_attente' %}<a class="btn btn-sm btn-success no-print" href="{% url 'ventes:paiement_confirmer' p.pk %}">Confirmer</a>{% endif %}</p>
+    {% endfor %}
+
+    <h2 class="h6">Retours</h2>
+    <ul>{% for r in retours %}<li>{{ r }}</li>{% empty %}<li class="text-muted">Aucun retour.</li>{% endfor %}</ul>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+  document.getElementById('imprimer-recu').addEventListener('click', function () {
+    window.print();
+  });
+</script>
 {% endblock %}

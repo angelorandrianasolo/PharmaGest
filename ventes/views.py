@@ -4,10 +4,15 @@ import uuid
 
 from django.contrib import messages
 from django.contrib.auth.mixins import PermissionRequiredMixin
-from django.db.models import Q
+from django.db.models import Prefetch, Q
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
 from django.views import View
 from django.views.generic import DetailView, FormView, ListView
+
+from medicaments.models import Medicament
+from stock.models import LotStock
 
 from .forms import ConfirmationPaiementForm, LigneVenteFormSet, RetourForm, VenteForm
 from .models import LigneVente, Paiement, Vente
@@ -27,7 +32,11 @@ class CaisseView(PermissionRequiredMixin, View):
         cle = request.POST.get('idempotency_key') or str(uuid.uuid4())
         if form.is_valid() and formset.is_valid():
             lignes = [
-                {'medicament': d['medicament'], 'quantite': d['quantite']}
+                {
+                    'medicament': d['medicament'],
+                    'quantite': d['quantite'],
+                    'lot': d.get('lot'),
+                }
                 for d in formset.cleaned_data
                 if d and not d.get('DELETE')
             ]
@@ -43,15 +52,95 @@ class CaisseView(PermissionRequiredMixin, View):
                 return redirect('ventes:detail', pk=vente.pk)
             except Exception as exc:
                 messages.error(request, str(exc))
-        return self._rendu(request, form, formset, cle)
+        return self._rendu(request, form, formset, cle, self._panier_initial(formset))
 
-    def _rendu(self, request, form, formset, cle):
+    @staticmethod
+    def _panier_initial(formset):
+        """Relit le panier soumis pour le restituer après une erreur de validation."""
+        panier = []
+        for sous_form in formset.forms:
+            prefixe = sous_form.prefix
+            donnees = sous_form.data
+            if donnees.get(f'{prefixe}-DELETE'):
+                continue
+            identifiant = donnees.get(f'{prefixe}-medicament', '')
+            if not str(identifiant).isdigit():
+                continue
+            panier.append({
+                'id': int(identifiant),
+                'quantite': donnees.get(f'{prefixe}-quantite', '1'),
+                'lot': donnees.get(f'{prefixe}-lot', ''),
+            })
+        return panier
+
+    def _rendu(self, request, form, formset, cle, panier_initial=None):
         return render(request, self.template_name, {
-            'form': form, 'formset': formset, 'idempotency_key': cle,
+            'form': form,
+            'formset': formset,
+            'idempotency_key': cle,
+            'panier_initial': panier_initial or [],
         })
 
 
-class VenteListView(ListView):
+class RechercheMedicamentView(PermissionRequiredMixin, View):
+    """Recherche nom / code-barres (scan) et lots délivrables pour la caisse."""
+
+    permission_required = 'ventes.add_vente'
+
+    def get(self, request):
+        identifiant = request.GET.get('id', '').strip()
+        recherche = request.GET.get('q', '').strip()
+        lots = (
+            LotStock.objects.filter(
+                quantite__gt=0,
+                est_bloque=False,
+                date_peremption__gte=timezone.localdate(),
+            ).order_by('date_peremption', 'id')
+        )
+        queryset = Medicament.objects.filter(statut=Medicament.STATUT_ACTIF)
+        if identifiant.isdigit():
+            queryset = queryset.filter(pk=int(identifiant))
+        elif len(recherche) >= 2:
+            queryset = queryset.filter(
+                Q(nom__icontains=recherche)
+                | Q(denomination_generique__icontains=recherche)
+                | Q(code_barres__icontains=recherche)
+            )
+        else:
+            return JsonResponse({'resultats': []})
+
+        queryset = queryset.prefetch_related(
+            Prefetch('lots', queryset=lots, to_attr='lots_disponibles')
+        )[:20]
+        return JsonResponse({
+            'resultats': [self._serialiser(medicament) for medicament in queryset],
+        })
+
+    @staticmethod
+    def _serialiser(medicament):
+        return {
+            'id': medicament.pk,
+            'nom': medicament.nom,
+            'dosage': medicament.dosage,
+            'presentation': medicament.forme,
+            'code_barres': medicament.code_barres or '',
+            'prix': str(medicament.prix_vente),
+            'stock': medicament.stock_disponible,
+            'lots': [
+                {
+                    'id': lot.pk,
+                    'numero': lot.numero_lot,
+                    'peremption': lot.date_peremption.isoformat(),
+                    'quantite': lot.quantite,
+                    'suggere': index == 0,
+                }
+                for index, lot in enumerate(medicament.lots_disponibles[:10])
+            ],
+        }
+
+
+class VenteListView(PermissionRequiredMixin, ListView):
+    permission_required = 'ventes.view_vente'
     model = Vente
     template_name = 'ventes/vente_list.html'
     context_object_name = 'ventes'
@@ -67,7 +156,8 @@ class VenteListView(ListView):
         return queryset.order_by('-date')
 
 
-class VenteDetailView(DetailView):
+class VenteDetailView(PermissionRequiredMixin, DetailView):
+    permission_required = 'ventes.view_vente'
     model = Vente
     template_name = 'ventes/vente_detail.html'
     context_object_name = 'vente'

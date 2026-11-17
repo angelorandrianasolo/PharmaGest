@@ -45,6 +45,30 @@ def allouer_lots_fefo(medicament, quantite, date_reference=None):
 
 
 @transaction.atomic
+def allouer_lot_choisi(medicament, lot, quantite, date_reference=None):
+    """Alloue une quantité sur un lot précis, choisi par le caissier.
+
+    Le lot est reverrouillé et revérifié côté serveur : le choix affiché dans
+    la caisse n'est qu'une indication, la base reste propriétaire de la
+    décision (RG07/RG08).
+    """
+    if quantite <= 0:
+        raise ValidationError('La quantité doit être positive.')
+    date_reference = date_reference or timezone.localdate()
+    lot_verrouille = LotStock.objects.select_for_update().get(pk=lot.pk)
+    if lot_verrouille.medicament_id != medicament.pk:
+        raise ValidationError("Ce lot n'appartient pas au médicament sélectionné.")
+    if not lot_verrouille.est_delivrable or lot_verrouille.date_peremption < date_reference:
+        raise LotNonDelivrableError("Le lot choisi n'est plus délivrable.")
+    if lot_verrouille.quantite < quantite:
+        raise StockInsuffisantError(
+            f'Stock insuffisant sur le lot {lot_verrouille.numero_lot} '
+            f'({lot_verrouille.quantite} unité(s) disponible(s)).'
+        )
+    return [(lot_verrouille, quantite)]
+
+
+@transaction.atomic
 def consommer_lots(allocations, *, reference, utilisateur, motif='Vente'):
     """Decremente les lots alloues et ecrit les mouvements de sortie."""
     for lot_alloue, quantite in allocations:

@@ -8,12 +8,17 @@ transaction. Une clé d'idempotence empêche les doubles validations.
 from decimal import Decimal
 
 from django.core.exceptions import ValidationError
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.utils import timezone
 
 from core.utils import generer_numero, journaliser
 from medicaments.models import Medicament
-from stock.allocation import allouer_lots_fefo, consommer_lots, reinjecter_lot
+from stock.allocation import (
+    allouer_lot_choisi,
+    allouer_lots_fefo,
+    consommer_lots,
+    reinjecter_lot,
+)
 
 from .models import LigneVente, Paiement, RetourVente, Vente
 
@@ -21,63 +26,93 @@ from .models import LigneVente, Paiement, RetourVente, Vente
 @transaction.atomic
 def creer_vente(lignes, utilisateur, client=None, mode_paiement=Vente.MODE_ESPECES,
                 idempotency_key=None, note=''):
-    """Valide une vente, décrémente le stock et crée le paiement (RG06/RG08)."""
+    """Valide une vente, décrémente le stock et crée le paiement (RG06/RG08).
+
+    La clé d'idempotence est vérifiée sous verrou puis protégée par la
+    contrainte d'unicité dans un savepoint : en cas de double validation
+    concurrente, le second appel récupère la vente du premier au lieu de
+    lever une ``IntegrityError``.
+    """
     if idempotency_key:
-        existante = Vente.objects.filter(idempotency_key=idempotency_key).first()
+        existante = (
+            Vente.objects.select_for_update()
+            .filter(idempotency_key=idempotency_key)
+            .first()
+        )
         if existante is not None:
             return existante
     if not lignes:
         raise ValidationError('Le panier est vide.')
 
-    quantites_par_medicament = {}
+    lignes_validees = []
     for ligne in lignes:
         medicament = ligne['medicament']
         quantite = ligne['quantite']
+        lot = ligne.get('lot')
         if quantite <= 0:
             raise ValidationError('Les quantités doivent être positives.')
         if medicament.statut != Medicament.STATUT_ACTIF:
             raise ValidationError(f'{medicament.nom} est archivé et ne peut plus être vendu.')
-        quantites_par_medicament[medicament.pk] = (
-            quantites_par_medicament.get(medicament.pk, 0) + quantite
-        )
+        if lot is not None and lot.medicament_id != medicament.pk:
+            raise ValidationError("Le lot sélectionné n'appartient pas à ce médicament.")
+        lignes_validees.append((medicament, quantite, lot))
 
-    allocations = []
-    for medicament_id, quantite in quantites_par_medicament.items():
-        medicament = Medicament.objects.get(pk=medicament_id)
-        lots = allouer_lots_fefo(medicament, quantite)
-        allocations.extend([(medicament, lot, qt) for lot, qt in lots])
-
-    numero = generer_numero('VTE', Vente)
     total = sum(
-        (medicament.prix_vente * qt for medicament, lot, qt in allocations),
+        (medicament.prix_vente * quantite for medicament, quantite, lot in lignes_validees),
         Decimal('0'),
     )
 
-    vente = Vente.objects.create(
-        numero=numero,
-        client=client,
-        utilisateur=utilisateur,
-        mode_paiement=mode_paiement,
-        total=total,
-        note=note,
-        statut=(Vente.STATUT_CONFIRMEE if mode_paiement == Vente.MODE_ESPECES
-                else Vente.STATUT_EN_ATTENTE),
-        **({'idempotency_key': idempotency_key} if idempotency_key else {}),
-    )
-    for medicament, lot, quantite in allocations:
-        LigneVente.objects.create(
-            vente=vente,
-            medicament=medicament,
-            lot=lot,
-            numero_lot=lot.numero_lot,
-            date_peremption=lot.date_peremption,
-            quantite=quantite,
-            prix_unitaire=medicament.prix_vente,
+    for tentative in range(3):
+        numero = generer_numero('VTE', Vente)
+        try:
+            with transaction.atomic():
+                vente = Vente.objects.create(
+                    numero=numero,
+                    client=client,
+                    utilisateur=utilisateur,
+                    mode_paiement=mode_paiement,
+                    total=total,
+                    note=note,
+                    statut=(Vente.STATUT_CONFIRMEE if mode_paiement == Vente.MODE_ESPECES
+                            else Vente.STATUT_EN_ATTENTE),
+                    **({'idempotency_key': idempotency_key} if idempotency_key else {}),
+                )
+            break
+        except IntegrityError:
+            # Concurrence : l'autre transaction vient de créer la même vente.
+            existante = (
+                Vente.objects.filter(idempotency_key=idempotency_key).first()
+                if idempotency_key else None
+            )
+            if existante is not None:
+                return existante
+            if tentative == 2:
+                raise
+    else:
+        raise ValidationError("Impossible de générer un numéro de vente unique.")
+
+    # Les lots explicitement choisis sont traités en premier ; l'allocation
+    # FEFO des autres lignes voit donc le stock déjà réduit par ces choix.
+    for medicament, quantite, lot in sorted(lignes_validees, key=lambda l: l[2] is None):
+        lots = (
+            allouer_lot_choisi(medicament, lot, quantite)
+            if lot is not None
+            else allouer_lots_fefo(medicament, quantite)
         )
-    consommer_lots(
-        [(lot, qt) for medicament, lot, qt in allocations],
-        reference=numero, utilisateur=utilisateur, motif='Vente',
-    )
+        for lot_alloue, quantite_allouee in lots:
+            LigneVente.objects.create(
+                vente=vente,
+                medicament=medicament,
+                lot=lot_alloue,
+                numero_lot=lot_alloue.numero_lot,
+                date_peremption=lot_alloue.date_peremption,
+                quantite=quantite_allouee,
+                prix_unitaire=medicament.prix_vente,
+            )
+        consommer_lots(
+            lots, reference=numero, utilisateur=utilisateur, motif='Vente',
+        )
+
     Paiement.objects.create(
         vente=vente,
         mode=mode_paiement,
