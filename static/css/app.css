@@ -915,10 +915,45 @@ body.auth-page {
     radial-gradient(circle at 88% 92%, rgba(217, 138, 61, .08), transparent 42%);
 }
 .auth-page { position: relative; display: grid; place-items: center; padding: 70px 20px 44px; }
-.auth-shell { width: min(440px, 100%); display: flex; flex-direction: column; align-items: center; }
+.auth-shell { width: 100%; display: flex; flex-direction: column; align-items: center; }
 .auth-shell > .btn-retour { position: absolute; top: 18px; left: 20px; margin: 0; }
+
+/* Connexion : ancienne carte avec bandeau illustré (cette page uniquement) */
+.auth-wrap {
+  width: min(470px, 100%);
+  display: grid;
+  grid-template-columns: 1fr;
+  border-radius: 24px;
+  overflow: hidden;
+  background: var(--surface);
+  box-shadow: 0 30px 70px rgba(10, 43, 39, .2);
+  border: 1px solid var(--line);
+}
+.auth-art { position: relative; min-height: 172px; overflow: hidden; background: var(--ink-deep); }
+.auth-art img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .48; }
+.auth-art::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(160deg, rgba(10, 43, 39, .35), rgba(10, 43, 39, .92));
+}
+.auth-art-content { position: absolute; z-index: 1; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px 28px; color: #fff; }
+.auth-art-content h2 { color: #fff; font-size: 1.32rem; line-height: 1.2; margin: 0 0 7px; }
+.auth-art-content p { color: #cfe3da; font-size: .79rem; line-height: 1.5; margin: 0; max-width: 46ch; }
+.auth-panel { padding: 38px 42px; display: flex; flex-direction: column; justify-content: center; text-align: center; }
+.auth-panel-logo { width: 46px; height: 46px; margin: 0 auto 14px; }
+.auth-panel .eyebrow { align-self: center; }
+.auth-panel h1 { font-size: 1.6rem; margin: 0 0 4px; }
+.auth-panel .lead { color: var(--muted); font-size: .85rem; margin: 0 0 24px; }
+.auth-panel .btn { width: 100%; margin-top: 6px; }
+.auth-panel .form-label { font-size: .78rem; }
+.auth-panel .mb-3 { text-align: left; }
+.auth-panel .auth-security { align-items: center; justify-content: center; text-align: center; }
+.auth-panel .auth-security .ico { width: 14px; height: 14px; margin-top: 0; }
+
+/* Carte sobre : inscription et confirmation uniquement */
 .auth-card {
-  width: 100%;
+  width: min(440px, 100%);
   padding: 36px 38px 30px;
   border: 1px solid var(--line);
   border-radius: 18px;
@@ -1055,6 +1090,10 @@ body.auth-page {
   .hero h1 { font-size: 1.95rem; }
   .hero-badge { right: 8px; bottom: -10px; }
   .auth-page { padding: 58px 14px 30px; }
+  .auth-art { min-height: 150px; }
+  .auth-art-content { padding: 16px 20px; }
+  .auth-art-content h2 { font-size: 1.15rem; }
+  .auth-panel { padding: 30px 22px; }
   .auth-card { padding: 28px 22px; }
   .profile-form-card .card-body { padding: 22px 18px; }
   .page-head { align-items: flex-start; }

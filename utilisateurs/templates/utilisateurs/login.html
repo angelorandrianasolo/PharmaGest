@@ -2,30 +2,40 @@
 {% load static %}
 {% block title %}Connexion — PharmaGest{% endblock %}
 {% block content %}
-<div class="auth-card reveal">
-  <img class="auth-card-logo" src="{% static 'images/logo.svg' %}" alt="PharmaGest">
-  <h1>Connexion</h1>
-  <p class="auth-card-sub">Identifiez-vous pour accéder à votre espace de gestion officinale.</p>
-  <form method="post">
-    {% csrf_token %}
-    {% for field in form %}
-      <div class="auth-field">
-        <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-        <div class="auth-input">
-          <svg class="ico"><use href="#i-{% if field.name == 'password' %}lock{% else %}users{% endif %}"/></svg>
-          {{ field }}
+<div class="auth-wrap reveal">
+  <div class="auth-art">
+    <img src="{% static 'images/hero-pharmacie.svg' %}" alt="Illustration PharmaGest : traçabilité des lots et indicateurs">
+    <div class="auth-art-content">
+      <h2>Votre pharmacie, sous contrôle.</h2>
+      <p>Pilotez vos stocks, vos lots, vos ventes et vos rapports depuis un espace unique, sécurisé et entièrement tracé.</p>
+    </div>
+  </div>
+  <div class="auth-panel">
+    <img class="auth-panel-logo" src="{% static 'images/logo.svg' %}" alt="PharmaGest">
+    <span class="eyebrow">Espace sécurisé</span>
+    <h1>Connexion</h1>
+    <p class="lead">Identifiez-vous pour accéder à votre espace de gestion.</p>
+    <form method="post">
+      {% csrf_token %}
+      {% for field in form %}
+        <div class="mb-3">
+          <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+          <div class="auth-input">
+            <svg class="ico"><use href="#i-{% if field.name == 'password' %}lock{% else %}users{% endif %}"/></svg>
+            {{ field }}
+          </div>
+          {{ field.errors }}
         </div>
-        {{ field.errors }}
-      </div>
-    {% endfor %}
-    {{ form.non_field_errors }}
-    <button class="btn btn-primary auth-btn" type="submit">Se connecter</button>
-  </form>
-  <p class="auth-security"><svg class="ico"><use href="#i-shield"/></svg> Espace réservé au personnel habilité — accès tracés.</p>
-  <p class="auth-foot">
-    <a href="{% url 'utilisateurs:password_reset' %}">Mot de passe oublié ?</a>
-    <span class="auth-sep">·</span>
-    <a href="{% url 'utilisateurs:inscription' %}">Créer un compte</a>
-  </p>
+      {% endfor %}
+      {{ form.non_field_errors }}
+      <button class="btn btn-primary" type="submit">Se connecter <svg class="ico" style="width:16px;height:16px;display:inline;vertical-align:-3px"><use href="#i-arrow"/></svg></button>
+    </form>
+    <p class="auth-security"><svg class="ico"><use href="#i-shield"/></svg> Espace réservé au personnel habilité — accès tracés.</p>
+    <p class="auth-foot">
+      <a href="{% url 'utilisateurs:password_reset' %}">Mot de passe oublié ?</a>
+      <span class="auth-sep">·</span>
+      <a href="{% url 'utilisateurs:inscription' %}">Créer un compte</a>
+    </p>
+  </div>
 </div>
 {% endblock %}

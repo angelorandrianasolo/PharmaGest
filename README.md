@@ -13,7 +13,7 @@ Fonctionnalités principales :
 - tableau de bord, alertes de rupture/péremption et documents **PDF ReportLab** ;
 - rôles et permissions, journal d'audit, sauvegarde/restauration ;
 - inscription publique (compte à activer), profil consultable et modifiable avec photo de profil et confirmation du mot de passe ;
-- jeu de données fictives et 61 tests automatisés.
+- jeu de données fictives et 62 tests automatisés.
 
 ---
 
@@ -76,7 +76,7 @@ sa propre page.
 # Vérification du projet
 docker compose run --rm web python manage.py check
 
-# Tests automatisés (61 tests)
+# Tests automatisés (62 tests)
 docker compose run --rm web python manage.py test
 
 # Contrôle de cohérence stock <> mouvements
@@ -222,9 +222,10 @@ Un bouton **Retour** est disponible sur toutes les pages (dans la barre supérie
 pages connectées, au-dessus du formulaire pour les pages publiques) : il revient à la page
 précédente et replie sur l'accueil en l'absence d'historique.
 
-Les écrans publics (connexion, inscription, confirmation) utilisent une carte centrée et sobre :
-logo, titre, champs avec icônes pour la connexion, accès « mot de passe oublié » et lien vers
-l'inscription. Aucune mise en page inspirée d'un réseau social n'est utilisée.
+La page de connexion reprend son style antérieur : carte centrée avec bandeau illustré
+(`static/images/hero-pharmacie.svg`), logo, champs avec icônes, accès « mot de passe oublié » et
+lien vers l'inscription. Les pages d'inscription et de confirmation conservent une carte centrée
+et sobre. Aucune mise en page inspirée d'un réseau social n'est utilisée.
 
 La page de profil est un formulaire unique centré sur les seules données modifiables ; le bouton
 de retour et la navigation latérale restent inchangés. Un visiteur non connecté est
