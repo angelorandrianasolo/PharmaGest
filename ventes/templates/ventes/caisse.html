@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block title %}Caisse{% endblock %}
+{% block content %}
+<h1 class="h4 mb-3">Caisse — nouvelle vente</h1>
+<form method="post" class="card card-body shadow-sm">
+  {% csrf_token %}
+  <input type="hidden" name="idempotency_key" value="{{ idempotency_key }}">
+  <div class="row">{% for field in form %}<div class="col-md-4 mb-3"><label class="form-label">{{ field.label }}</label>{{ field }}{{ field.errors }}</div>{% endfor %}</div>
+  <h2 class="h6">Produits</h2>
+  {{ formset.management_form }}
+  {% for sform in formset %}
+    <div class="row g-2 mb-2">
+      {% for field in sform %}<div class="col-md-4"><label class="form-label small">{{ field.label }}</label>{{ field }}{{ field.errors }}</div>{% endfor %}
+    </div>
+  {% endfor %}
+  {{ formset.non_form_errors }}
+  <button class="btn btn-primary" type="submit">Valider la vente</button>
+</form>
+<p class="text-muted mt-3">Les lots sont choisis automatiquement selon la méthode FEFO (première péremption, première sortie). Les lots périmés ou bloqués sont exclus.</p>
+{% endblock %}

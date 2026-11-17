@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1 class="h4 mb-3">Confirmer le paiement — {{ paiement.vente.numero }}</h1>
+<p>Mode : {{ paiement.get_mode_display }} — Montant : {{ paiement.montant }} Ar</p>
+<form method="post" class="card card-body shadow-sm">
+  {% csrf_token %}{% for field in form %}<div class="mb-3"><label class="form-label">{{ field.label }}</label>{{ field }}{{ field.errors }}</div>{% endfor %}
+  <button class="btn btn-success" type="submit">Confirmer le paiement</button>
+</form>
+{% endblock %}

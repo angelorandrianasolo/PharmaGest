@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1 class="h4 mb-3">Retour sur la vente {{ ligne.vente.numero }}</h1>
+<p>{{ ligne.medicament }} — lot {{ ligne.numero_lot }} — {{ ligne.quantite }} vendue(s)</p>
+<form method="post" class="card card-body shadow-sm">
+  {% csrf_token %}{% for field in form %}<div class="mb-3"><label class="form-label">{{ field.label }}</label>{{ field }}{{ field.errors }}</div>{% endfor %}
+  <button class="btn btn-warning" type="submit">Enregistrer le retour</button>
+</form>
+{% endblock %}
