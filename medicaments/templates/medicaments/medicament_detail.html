@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h4">{{ medicament.nom }}</h1>
+  {% if perms.medicaments.change_medicament %}
+  <div>
+    <a class="btn btn-sm btn-outline-primary" href="{% url 'medicaments:modifier' medicament.pk %}">Modifier</a>
+    <form method="post" action="{% url 'medicaments:archiver' medicament.pk %}" class="d-inline">
+      {% csrf_token %}<button class="btn btn-sm btn-outline-warning" type="submit" onclick="return confirm('Confirmer cette opération ?')">{% if medicament.statut == 'archive' %}Restaurer{% else %}Archiver{% endif %}</button>
+    </form>
+  </div>{% endif %}
+</div>
+<div class="row">
+  <div class="col-md-3">{% if medicament.photo %}<img src="{{ medicament.photo.url }}" class="img-fluid rounded" alt="Photo">{% endif %}</div>
+  <div class="col-md-9">
+    <table class="table table-sm">
+      <tr><th>Catégorie</th><td>{{ medicament.categorie.nom }}</td></tr>
+      <tr><th>Dénomination générique</th><td>{{ medicament.denomination_generique|default:'-' }}</td></tr>
+      <tr><th>Forme / Dosage</th><td>{{ medicament.forme|default:'-' }} / {{ medicament.dosage|default:'-' }}</td></tr>
+      <tr><th>Laboratoire</th><td>{{ medicament.laboratoire|default:'-' }}</td></tr>
+      <tr><th>Code-barres</th><td>{{ medicament.code_barres|default:'-' }}</td></tr>
+      <tr><th>Prix d'achat / vente</th><td>{{ medicament.prix_achat }} Ar / {{ medicament.prix_vente }} Ar</td></tr>
+      <tr><th>Seuil d'alerte</th><td>{{ medicament.seuil_alerte }}</td></tr>
+      <tr><th>Stock disponible</th><td>{{ medicament.stock_disponible }}</td></tr>
+    </table>
+    <h2 class="h6">Lots</h2>
+    <table class="table table-sm"><thead><tr><th>Lot</th><th>Péremption</th><th>Quantité</th><th>État</th></tr></thead><tbody>
+      {% for lot in medicament.lots.all %}<tr><td>{{ lot.numero_lot }}</td><td>{{ lot.date_peremption|date:'d/m/Y' }}</td><td>{{ lot.quantite }}</td><td>{% if lot.est_delivrable %}<span class="badge bg-success">Délivrable</span>{% else %}<span class="badge bg-danger">Indisponible</span>{% endif %}</td></tr>{% endfor %}
+    </tbody></table>
+  </div>
+</div>
+{% endblock %}

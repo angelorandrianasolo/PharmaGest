@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1 class="h4 mb-3">{% if form.instance.pk %}Modifier le médicament{% else %}Nouveau médicament{% endif %}</h1>
+<form method="post" enctype="multipart/form-data" class="card card-body shadow-sm">
+  {% csrf_token %}
+  <div class="row">
+    {% for field in form %}<div class="col-md-6 mb-3"><label class="form-label">{{ field.label }}</label>{{ field }}{{ field.errors }}</div>{% endfor %}
+  </div>
+  {{ form.non_field_errors }}
+  <button class="btn btn-primary" type="submit">Enregistrer</button>
+  <a class="btn btn-secondary" href="{% url 'medicaments:liste' %}">Annuler</a>
+</form>
+{% endblock %}

@@ -1,0 +1,11 @@
+<div class="card shadow-sm">
+  <div class="card-header">Alertes de stock</div>
+  <ul class="list-group list-group-flush">
+    {% for m in alertes %}
+      <li class="list-group-item d-flex justify-content-between">
+        <a href="{% url 'medicaments:detail' m.pk %}">{{ m.nom }}</a>
+        <span class="badge bg-warning text-dark">{{ m.stock_valide|default:0 }} / {{ m.seuil_alerte }}</span>
+      </li>
+    {% empty %}<li class="list-group-item text-muted">Aucune alerte.</li>{% endfor %}
+  </ul>
+</div>

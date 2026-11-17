@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block title %}Médicaments{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h4">Médicaments</h1>
+  {% if perms.medicaments.add_medicament %}<a class="btn btn-primary" href="{% url 'medicaments:creer' %}">Ajouter un médicament</a>{% endif %}
+</div>
+<form method="get" class="card card-body mb-3 row g-2">
+  <div class="col-md-5"><input class="form-control" name="q" placeholder="Nom ou code-barres" value="{{ filtres.q|default:'' }}"></div>
+  <div class="col-md-3">
+    <select name="categorie" class="form-select">
+      <option value="">Toutes les catégories</option>
+      {% for c in categories %}<option value="{{ c.pk }}" {% if filtres.categorie == c.pk|stringformat:'s' %}selected{% endif %}>{{ c.nom }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="col-md-2">
+    <select name="tri" class="form-select">
+      <option value="nom">Tri : nom</option><option value="prix_vente">Prix</option><option value="cree_le">Date</option>
+    </select>
+  </div>
+  <div class="col-md-2"><button class="btn btn-outline-primary w-100" type="submit">Rechercher</button></div>
+</form>
+<div class="table-responsive"><table class="table table-hover table-sm align-middle">
+  <thead><tr><th>Photo</th><th>Nom</th><th>Catégorie</th><th>Dosage</th><th>Prix vente</th><th>Stock</th><th>Statut</th><th></th></tr></thead>
+  <tbody>
+  {% for m in medicaments %}
+    <tr>
+      <td>{% if m.photo %}<img src="{{ m.photo.url }}" alt="" width="40" height="40" class="rounded object-fit-cover">{% else %}—{% endif %}</td>
+      <td><a href="{% url 'medicaments:detail' m.pk %}">{{ m.nom }}</a></td>
+      <td>{{ m.categorie.nom }}</td><td>{{ m.dosage|default:'-' }}</td>
+      <td>{{ m.prix_vente }} Ar</td>
+      <td>{% if m.stock_disponible <= 0 %}<span class="badge bg-danger">Rupture</span>{% elif m.est_sous_le_seuil %}<span class="badge bg-warning text-dark">{{ m.stock_disponible }}</span>{% else %}{{ m.stock_disponible }}{% endif %}</td>
+      <td>{{ m.get_statut_display }}</td>
+      <td>{% if perms.medicaments.change_medicament %}<a class="btn btn-sm btn-outline-primary" href="{% url 'medicaments:modifier' m.pk %}">Modifier</a>{% endif %}</td>
+    </tr>
+  {% empty %}<tr><td colspan="8" class="text-muted">Aucun médicament.</td></tr>{% endfor %}
+  </tbody>
+</table></div>
+<a class="btn btn-sm btn-outline-secondary" href="{% url 'medicaments:categories' %}">Gérer les catégories</a>
+{% include 'includes/pagination.html' %}
+{% endblock %}
