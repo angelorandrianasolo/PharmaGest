@@ -161,3 +161,16 @@ class CorrectionStockTests(BaseTestCase):
             corriger_quantite(lot, -1, motif='Erreur', utilisateur=utilisateur)
         lot.refresh_from_db()
         self.assertEqual(lot.quantite, 14)
+
+    def test_controle_integrite_detecte_une_quantite_incoherente(self):
+        medicament = Fabrique.medicament()
+        lot = Fabrique.lot(medicament, 'LOT-INC', 10, jours=100)
+
+        self.assertEqual(verifier_integrite(), [])
+        # Une écriture directe, sans mouvement, simule une incohérence.
+        LotStock.objects.filter(pk=lot.pk).update(quantite=13)
+
+        incoherences = verifier_integrite(medicament)
+        self.assertEqual(len(incoherences), 1)
+        self.assertEqual(incoherences[0][1], 13)
+        self.assertEqual(incoherences[0][2], 10)

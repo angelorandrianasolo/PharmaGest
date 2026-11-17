@@ -7,7 +7,7 @@
     <form method="post" action="{% url 'achats:commande_valider' commande.pk %}" class="d-inline">{% csrf_token %}<button class="btn btn-sm btn-primary" type="submit">Valider</button></form>{% endif %}
     {% if perms.achats.receptionner_commande and commande.statut != 'annulee' and commande.statut != 'entierement_receptionnee' %}
     <a class="btn btn-sm btn-success" href="{% url 'achats:reception_creer' commande.pk %}">Réceptionner</a>{% endif %}
-    {% if perms.achats.annuler_commande and (commande.statut == 'brouillon' or commande.statut == 'commandee') %}
+    {% if perms.achats.annuler_commande and commande.statut == 'brouillon' or perms.achats.annuler_commande and commande.statut == 'commandee' %}
     <form method="post" action="{% url 'achats:commande_annuler' commande.pk %}" class="d-inline">{% csrf_token %}<button class="btn btn-sm btn-outline-danger" type="submit" onclick="return confirm('Annuler cette commande ?')">Annuler</button></form>{% endif %}
   </div>
 </div>

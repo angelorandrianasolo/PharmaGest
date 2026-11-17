@@ -100,3 +100,48 @@ class CaisseTests(BaseTestCase):
         contenu = self.client.get(reverse('ventes:detail', args=[vente.pk])).content.decode()
         self.assertIn('id="imprimer-recu"', contenu)
         self.assertIn('Imprimer le reçu', contenu)
+
+    def test_recherche_par_identifiant_du_medicament(self):
+        reponse = self.client.get(
+            reverse('ventes:recherche_produit'), {'id': str(self.medicament.pk)}
+        )
+        resultats = reponse.json()['resultats']
+        self.assertEqual(len(resultats), 1)
+        self.assertEqual(resultats[0]['id'], self.medicament.pk)
+
+    def test_recherche_trop_courte_ne_retourne_rien(self):
+        for recherche in ('', 'i'):
+            with self.subTest(recherche=recherche):
+                reponse = self.client.get(
+                    reverse('ventes:recherche_produit'), {'q': recherche}
+                )
+                self.assertEqual(reponse.json()['resultats'], [])
+
+    def test_recherche_exclut_les_lots_perimes_et_bloques(self):
+        Fabrique.lot(self.medicament, 'LOT-PERIME', 5, jours=-2)
+        Fabrique.lot(self.medicament, 'LOT-BLOQUE', 5, jours=300, bloque=True)
+        reponse = self.client.get(reverse('ventes:recherche_produit'), {'q': 'ibu'})
+        lots = reponse.json()['resultats'][0]['lots']
+        self.assertEqual(
+            [lot['numero'] for lot in lots], ['LOT-PROCHE', 'LOT-LOIN']
+        )
+
+    def test_panier_est_restitue_apres_une_erreur_de_vente(self):
+        reponse = self.client.post(reverse('ventes:caisse'), {
+            'idempotency_key': str(uuid.uuid4()),
+            'client': '',
+            'mode_paiement': Vente.MODE_ESPECES,
+            'note': '',
+            'form-TOTAL_FORMS': '1',
+            'form-INITIAL_FORMS': '0',
+            'form-MIN_NUM_FORMS': '0',
+            'form-MAX_NUM_FORMS': '1000',
+            'form-0-medicament': str(self.medicament.pk),
+            'form-0-quantite': '999',
+            'form-0-lot': '',
+        })
+        self.assertEqual(reponse.status_code, 200)
+        panier = reponse.context['panier_initial']
+        self.assertEqual(len(panier), 1)
+        self.assertEqual(panier[0]['id'], self.medicament.pk)
+        self.assertEqual(panier[0]['quantite'], '999')
