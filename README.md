@@ -94,8 +94,9 @@ achats/            commandes et réceptions (services transactionnels)
 stock/             lots, mouvements, FEFO, corrections, verifier_stock
 ventes/            caisse, paiements, retours, annulations
 rapports/          tableau de bord et PDF ReportLab
-templates/         interface Bootstrap 5 en français
-static/css/        styles
+templates/         interface en français (identité « Ordonnance »)
+static/css/        système de design (variables, typographie, animations)
+static/images/     logo, maquettes du cahier et visuels médicaments de démonstration
 media/             photos téléversées (volume Docker)
 backups/           sauvegardes locales (ignorées par Git)
 tests/             suite de tests Django
@@ -132,3 +133,17 @@ renseigner `CSRF_TRUSTED_ORIGINS`.
 - `docs/CONCEPTION.md` : MCD, MLD, diagrammes d'états et de séquence, matrice des rôles.
 - `docs/DECISIONS.md` : choix techniques et limites assumées.
 - `docs/GUIDE_UTILISATION.md` : parcours utilisateur pas à pas.
+
+## 8. Interface et visuels
+
+L'interface adopte une direction « ordonnance » : vert profond et ambre sur un fond de
+papeterie chaude, typographie éditoriale (Fraunces + DM Sans), barre latérale, cartes aérées
+et animations d'entrée discrètes. Le CSS est centralisé dans `static/css/app.css` via des
+variables CSS ; Bootstrap reste utilisé pour la grille et les formulaires.
+
+Les images fournies dans le cahier des charges ont été extraites du PDF et versionnées dans
+`static/images/maquettes/` : bannière de couverture, aperçu général, tableau de bord,
+catalogue des médicaments, caisse, stocks et graphiques. Elles servent de références visuelles
+sur l'accueil et sur l'écran de connexion. Les illustrations de `static/images/medicaments/`
+sont des visuels de démonstration : dès qu'une photo réelle est téléversée sur un médicament,
+c'est elle qui est affichée.
