@@ -3,39 +3,54 @@
 {% block title %}Connexion — PharmaGest{% endblock %}
 {% block content %}
 <div class="auth-wrap reveal">
-  <div class="auth-art">
-    <img src="{% static 'images/hero-pharmacie.svg' %}" alt="Illustration PharmaGest : traçabilité des lots et indicateurs">
+  <aside class="auth-art">
+    <img class="auth-art-bg" src="{% static 'images/hero-pharmacie.svg' %}" alt="" aria-hidden="true">
     <div class="auth-art-content">
-      <h2>Votre pharmacie, sous contrôle.</h2>
-      <p>Pilotez vos stocks, vos lots, vos ventes et vos rapports depuis un espace unique, sécurisé et entièrement tracé.</p>
+      <div class="login-brand">
+        <img src="{% static 'images/logo.svg' %}" alt="" aria-hidden="true">
+        <span>Pharma<em>Gest</em></span>
+      </div>
+      <div class="login-story">
+        <span class="login-kicker">Espace officinal · gestion tracée</span>
+        <h2>Votre pharmacie, sous contrôle.</h2>
+        <p>Pilotez vos stocks, vos lots, vos ventes et vos rapports depuis un espace unique, sécurisé et entièrement tracé.</p>
+        <ul class="login-features">
+          <li><svg class="ico" aria-hidden="true"><use href="#i-box"/></svg><span><strong>Stocks et lots FEFO</strong><small>Expirations et traçabilité maîtrisées</small></span></li>
+          <li><svg class="ico" aria-hidden="true"><use href="#i-shield"/></svg><span><strong>Accès par rôle</strong><small>Chaque action est attribuée et tracée</small></span></li>
+          <li><svg class="ico" aria-hidden="true"><use href="#i-chart"/></svg><span><strong>Ventes et rapports</strong><small>Le pilotage par les données</small></span></li>
+        </ul>
+      </div>
+      <p class="login-art-foot"><svg class="ico" aria-hidden="true"><use href="#i-lock"/></svg> Connexion chiffrée · Données protégées</p>
     </div>
-  </div>
-  <div class="auth-panel">
-    <img class="auth-panel-logo" src="{% static 'images/logo.svg' %}" alt="PharmaGest">
-    <span class="eyebrow">Espace sécurisé</span>
-    <h1>Connexion</h1>
-    <p class="lead">Identifiez-vous pour accéder à votre espace de gestion.</p>
+  </aside>
+
+  <section class="auth-panel">
+    <div class="login-form-head">
+      <span class="login-badge"><svg class="ico" aria-hidden="true"><use href="#i-shield"/></svg></span>
+      <span class="eyebrow">Espace sécurisé</span>
+      <h1>Connexion</h1>
+      <p class="lead">Identifiez-vous pour accéder à votre espace de gestion.</p>
+    </div>
     <form method="post">
       {% csrf_token %}
       {% for field in form %}
-        <div class="mb-3">
+        <div class="mb-3 login-field">
           <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
           <div class="auth-input">
-            <svg class="ico"><use href="#i-{% if field.name == 'password' %}lock{% else %}users{% endif %}"/></svg>
+            <svg class="ico" aria-hidden="true"><use href="#i-{% if field.name == 'password' %}lock{% else %}users{% endif %}"/></svg>
             {{ field }}
           </div>
           {{ field.errors }}
+          {% if field.name == 'password' %}
+            <a class="login-forgot" href="{% url 'utilisateurs:password_reset' %}">Mot de passe oublié ?</a>
+          {% endif %}
         </div>
       {% endfor %}
       {{ form.non_field_errors }}
-      <button class="btn btn-primary" type="submit">Se connecter <svg class="ico" style="width:16px;height:16px;display:inline;vertical-align:-3px"><use href="#i-arrow"/></svg></button>
+      <button class="btn btn-primary login-submit" type="submit">Se connecter <svg class="ico" aria-hidden="true"><use href="#i-arrow"/></svg></button>
     </form>
-    <p class="auth-security"><svg class="ico"><use href="#i-shield"/></svg> Espace réservé au personnel habilité — accès tracés.</p>
-    <p class="auth-foot">
-      <a href="{% url 'utilisateurs:password_reset' %}">Mot de passe oublié ?</a>
-      <span class="auth-sep">·</span>
-      <a href="{% url 'utilisateurs:inscription' %}">Créer un compte</a>
-    </p>
-  </div>
+    <p class="auth-security"><svg class="ico" aria-hidden="true"><use href="#i-shield"/></svg> Espace réservé au personnel habilité — accès tracés.</p>
+    <p class="auth-foot">Pas encore de compte ? <a href="{% url 'utilisateurs:inscription' %}">Créer un compte</a></p>
+  </section>
 </div>
 {% endblock %}

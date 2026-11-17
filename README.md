@@ -222,10 +222,13 @@ Un bouton **Retour** est disponible sur toutes les pages (dans la barre supérie
 pages connectées, au-dessus du formulaire pour les pages publiques) : il revient à la page
 précédente et replie sur l'accueil en l'absence d'historique.
 
-La page de connexion reprend son style antérieur : carte centrée avec bandeau illustré
-(`static/images/hero-pharmacie.svg`), logo, champs avec icônes, accès « mot de passe oublié » et
-lien vers l'inscription. Les pages d'inscription et de confirmation conservent une carte centrée
-et sobre. Aucune mise en page inspirée d'un réseau social n'est utilisée.
+La page de connexion est une carte éditoriale à deux panneaux, propre à cette page : à gauche, un
+panneau vert profond reprenant l'illustration officinale (`static/images/hero-pharmacie.svg`),
+le logotype et trois repères métier (stocks FEFO, accès par rôle, ventes et rapports) ; à droite,
+le formulaire sur fond blanc avec champs à icônes, lien « mot de passe oublié » et accès à
+l'inscription. Sur écran étroit, les deux panneaux s'empilent. Les pages d'inscription et de
+confirmation conservent leur carte centrée et sobre. Aucune mise en page inspirée d'un réseau
+social n'est utilisée.
 
 La page de profil est un formulaire unique centré sur les seules données modifiables ; le bouton
 de retour et la navigation latérale restent inchangés. Un visiteur non connecté est
