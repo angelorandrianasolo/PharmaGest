@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3"><h1 class="h4">Commandes d'achat</h1>
+{% if perms.achats.add_commandeachat %}<a class="btn btn-primary" href="{% url 'achats:commande_creer' %}">Nouvelle commande</a>{% endif %}</div>
+<table class="table table-sm table-hover"><thead><tr><th>Numéro</th><th>Fournisseur</th><th>Date</th><th>Statut</th><th>Total</th></tr></thead><tbody>
+{% for c in commandes %}<tr><td><a href="{% url 'achats:commande_detail' c.pk %}">{{ c.numero }}</a></td><td>{{ c.fournisseur }}</td><td>{{ c.date_commande|date:'d/m/Y' }}</td><td>{{ c.get_statut_display }}</td><td>{{ c.total }} Ar</td></tr>{% endfor %}
+</tbody></table>
+{% include 'includes/pagination.html' %}
+{% endblock %}

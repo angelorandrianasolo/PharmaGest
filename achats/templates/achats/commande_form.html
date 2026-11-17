@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1 class="h4 mb-3">Nouvelle commande d'achat</h1>
+<form method="post" class="card card-body shadow-sm">
+  {% csrf_token %}
+  <div class="row">{% for field in form %}<div class="col-md-4 mb-3"><label class="form-label">{{ field.label }}</label>{{ field }}{{ field.errors }}</div>{% endfor %}</div>
+  <h2 class="h6">Lignes</h2>
+  {{ formset.management_form }}
+  {% for sform in formset %}
+    <div class="row g-2 mb-2 border-bottom pb-2">
+      {% for field in sform %}<div class="col-md-3"><label class="form-label small">{{ field.label }}</label>{{ field }}{{ field.errors }}</div>{% endfor %}
+    </div>
+  {% endfor %}
+  {{ formset.non_form_errors }}
+  <button class="btn btn-primary" type="submit">Créer la commande</button>
+  <a class="btn btn-secondary" href="{% url 'achats:liste' %}">Annuler</a>
+</form>
+{% endblock %}

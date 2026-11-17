@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h4">Commande {{ commande.numero }}</h1>
+  <div>
+    {% if perms.achats.valider_commande and commande.statut == 'brouillon' %}
+    <form method="post" action="{% url 'achats:commande_valider' commande.pk %}" class="d-inline">{% csrf_token %}<button class="btn btn-sm btn-primary" type="submit">Valider</button></form>{% endif %}
+    {% if perms.achats.receptionner_commande and commande.statut != 'annulee' and commande.statut != 'entierement_receptionnee' %}
+    <a class="btn btn-sm btn-success" href="{% url 'achats:reception_creer' commande.pk %}">Réceptionner</a>{% endif %}
+    {% if perms.achats.annuler_commande and (commande.statut == 'brouillon' or commande.statut == 'commandee') %}
+    <form method="post" action="{% url 'achats:commande_annuler' commande.pk %}" class="d-inline">{% csrf_token %}<button class="btn btn-sm btn-outline-danger" type="submit" onclick="return confirm('Annuler cette commande ?')">Annuler</button></form>{% endif %}
+  </div>
+</div>
+<p>Fournisseur : {{ commande.fournisseur }} — Date : {{ commande.date_commande|date:'d/m/Y' }} — Statut : {{ commande.get_statut_display }}</p>
+<table class="table table-sm"><thead><tr><th>Médicament</th><th>Quantité</th><th>Prix unitaire</th><th>Sous-total</th></tr></thead><tbody>
+{% for l in commande.lignes.all %}<tr><td>{{ l.medicament }}</td><td>{{ l.quantite }}</td><td>{{ l.prix_unitaire }} Ar</td><td>{{ l.sous_total }} Ar</td></tr>{% endfor %}
+</tbody></table>
+<p><b>Total : {{ commande.total }} Ar</b></p>
+<h2 class="h6">Réceptions</h2>
+{% for r in receptions %}
+<div class="card mb-2"><div class="card-body">
+  <b>{{ r.numero }}</b> du {{ r.date_reception|date:'d/m/Y' }}
+  <a class="btn btn-sm btn-outline-secondary" href="{% url 'rapports:bon_reception' r.pk %}" target="_blank">Bon de réception PDF</a>
+  <table class="table table-sm mt-2"><tbody>{% for l in r.lignes.all %}<tr><td>{{ l.medicament }}</td><td>Lot {{ l.numero_lot }}</td><td>{{ l.quantite }}</td></tr>{% endfor %}</tbody></table>
+</div></div>
+{% empty %}<p class="text-muted">Aucune réception.</p>{% endfor %}
+<a class="btn btn-sm btn-outline-primary" href="{% url 'rapports:bon_commande' commande.pk %}" target="_blank">Bon de commande PDF</a>
+{% endblock %}

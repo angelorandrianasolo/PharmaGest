@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1 class="h4 mb-3">Réception de la commande {{ commande.numero }}</h1>
+<form method="post" class="card card-body shadow-sm">
+  {% csrf_token %}
+  {% for field in form %}<div class="mb-3"><label class="form-label">{{ field.label }}</label>{{ field }}{{ field.errors }}</div>{% endfor %}
+  <h2 class="h6">Lots reçus</h2>
+  <p class="text-muted">Indiquez le numéro de lot et la date de péremption pour chaque ligne : ces lots seront créés en stock.</p>
+  {{ formset.management_form }}
+  {% for sform in formset %}
+    <div class="row g-2 mb-2 border-bottom pb-2">
+      {% for field in sform %}<div class="col-md-2"><label class="form-label small">{{ field.label }}</label>{{ field }}{{ field.errors }}</div>{% endfor %}
+    </div>
+  {% endfor %}
+  {{ formset.non_form_errors }}
+  <button class="btn btn-success" type="submit">Valider la réception</button>
+  <a class="btn btn-secondary" href="{% url 'achats:commande_detail' commande.pk %}">Annuler</a>
+</form>
+{% endblock %}
