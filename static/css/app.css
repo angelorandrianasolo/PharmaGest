@@ -257,6 +257,26 @@ a:hover { color: var(--ink); }
 }
 .topbar-chip .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 0 3px var(--ok-soft); }
 
+/* Bouton de retour, disponible sur toutes les pages */
+.btn-retour {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 13px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: .78rem;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: border-color .2s, color .2s, background .2s;
+}
+.btn-retour:hover { border-color: var(--teal); color: var(--teal); background: var(--teal-pale); }
+.btn-retour .ico { width: 15px; height: 15px; }
+.auth-shell > .btn-retour { margin-bottom: 16px; }
+
 .menu-toggle {
   display: none;
   width: 40px;
@@ -919,11 +939,33 @@ a:hover { color: var(--ink); }
   color: #d7e9e1;
 }
 .auth-panel { padding: 44px 46px; display: flex; flex-direction: column; justify-content: center; }
+.auth-panel-logo { width: 42px; height: 42px; margin-bottom: 18px; }
 .auth-panel h1 { font-size: 1.6rem; margin: 0 0 4px; }
 .auth-panel .lead { color: var(--muted); font-size: .85rem; margin: 0 0 24px; }
 .auth-panel .btn { width: 100%; margin-top: 6px; }
 .auth-panel .form-label { font-size: .78rem; }
-.auth-foot { margin-top: 20px; font-size: .78rem; color: var(--muted); text-align: center; }
+.auth-input { position: relative; }
+.auth-input .ico {
+  position: absolute;
+  left: 13px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 17px;
+  height: 17px;
+  color: var(--muted);
+  pointer-events: none;
+}
+.auth-input .form-control { padding-left: 41px; }
+.auth-security {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 16px 0 0;
+  color: var(--muted);
+  font-size: .72rem;
+}
+.auth-security .ico { width: 14px; height: 14px; color: var(--teal); flex: 0 0 auto; }
+.auth-foot { margin-top: 14px; font-size: .78rem; color: var(--muted); text-align: center; }
 
 /* ---------- Animations d'entrée ---------- */
 @keyframes rise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
@@ -972,7 +1014,7 @@ a:hover { color: var(--ink); }
 
 /* ---------- Impression ---------- */
 @media print {
-  .sidebar, .topbar, .app-foot, .page-head-actions, .hero, .maquette-strip, .no-print { display: none !important; }
+  .sidebar, .topbar, .app-foot, .page-head-actions, .hero, .maquette-strip, .btn-retour, .no-print { display: none !important; }
   .app-main { margin-left: 0; }
   .content { padding: 0; }
   .card { box-shadow: none; break-inside: avoid; }

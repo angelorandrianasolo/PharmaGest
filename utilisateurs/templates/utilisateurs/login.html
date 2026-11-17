@@ -4,7 +4,7 @@
 {% block content %}
 <div class="auth-wrap reveal">
   <div class="auth-art">
-    <img src="{% static 'images/maquettes/presentation.jpg' %}" alt="Aperçu de l’interface PharmaGest">
+    <img src="{% static 'images/hero-pharmacie.svg' %}" alt="Illustration PharmaGest : traçabilité des lots et indicateurs">
     <div class="auth-art-content">
       <img class="brand-mark" src="{% static 'images/logo.svg' %}" alt="">
       <h2>Votre pharmacie, sous contrôle.</h2>
@@ -13,6 +13,7 @@
     </div>
   </div>
   <div class="auth-panel">
+    <img class="auth-panel-logo" src="{% static 'images/logo.svg' %}" alt="PharmaGest">
     <span class="eyebrow">Accès sécurisé</span>
     <h1>Connexion</h1>
     <p class="lead">Identifiez-vous pour accéder à votre espace de gestion.</p>
@@ -21,13 +22,17 @@
       {% for field in form %}
         <div class="mb-3">
           <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-          {{ field }}
+          <div class="auth-input">
+            <svg class="ico"><use href="#i-{% if field.name == 'password' %}lock{% else %}users{% endif %}"/></svg>
+            {{ field }}
+          </div>
           {{ field.errors }}
         </div>
       {% endfor %}
       {{ form.non_field_errors }}
       <button class="btn btn-primary" type="submit">Se connecter <svg class="ico" style="width:16px;height:16px;display:inline;vertical-align:-3px"><use href="#i-arrow"/></svg></button>
     </form>
+    <p class="auth-security"><svg class="ico"><use href="#i-shield"/></svg> Accès réservé au personnel autorisé de la pharmacie.</p>
     <p class="auth-foot"><a href="{% url 'utilisateurs:password_reset' %}">Mot de passe oublié ?</a></p>
   </div>
 </div>

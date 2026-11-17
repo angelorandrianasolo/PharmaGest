@@ -19,12 +19,13 @@ from django.views.generic import CreateView, ListView, UpdateView
 
 from core.utils import journaliser
 
-from .forms import UtilisateurCreationForm, UtilisateurModificationForm
+from .forms import ConnexionForm, UtilisateurCreationForm, UtilisateurModificationForm
 from .models import Utilisateur
 
 
 class ConnexionView(LoginView):
     template_name = "utilisateurs/login.html"
+    authentication_form = ConnexionForm
     redirect_authenticated_user = True
 
 

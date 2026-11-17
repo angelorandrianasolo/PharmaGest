@@ -1,9 +1,27 @@
 """Formulaires de gestion des comptes."""
 
 from django import forms
-from django.contrib.auth.forms import UserChangeForm, UserCreationForm
+from django.contrib.auth.forms import AuthenticationForm, UserChangeForm, UserCreationForm
 
 from .models import Utilisateur
+
+
+class ConnexionForm(AuthenticationForm):
+    """Formulaire de connexion avec indications et autocomplétion navigateur."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['username'].widget.attrs.update({
+            'placeholder': 'Votre identifiant',
+            'autocomplete': 'username',
+            'autofocus': True,
+        })
+        self.fields['password'].widget.attrs.update({
+            'placeholder': 'Votre mot de passe',
+            'autocomplete': 'current-password',
+        })
+        for field in self.fields.values():
+            field.widget.attrs.setdefault('class', 'form-control')
 
 
 class UtilisateurCreationForm(UserCreationForm):

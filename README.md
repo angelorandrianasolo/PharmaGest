@@ -12,7 +12,7 @@ Fonctionnalités principales :
 - caisse avec ventes atomiques, paiements espèces ou mobile money, retours compensatoires et annulations tracées ;
 - tableau de bord, alertes de rupture/péremption et documents **PDF ReportLab** ;
 - rôles et permissions, journal d'audit, sauvegarde/restauration ;
-- jeu de données fictives et 46 tests automatisés.
+- jeu de données fictives et 49 tests automatisés.
 
 ---
 
@@ -64,7 +64,7 @@ Mot de passe unique : **`pharma123`** (à changer impérativement hors démonstr
 # Vérification du projet
 docker compose run --rm web python manage.py check
 
-# Tests automatisés (46 tests)
+# Tests automatisés (49 tests)
 docker compose run --rm web python manage.py test
 
 # Contrôle de cohérence stock <> mouvements
@@ -201,12 +201,18 @@ variables CSS ; Bootstrap reste utilisé pour la grille et les formulaires.
 
 L'accueil affiche des **données réelles** : indicateurs de la journée (ventes, chiffre
 d'affaires, réceptions, alertes), dernières ventes, lots proches de la péremption et paiements
-en attente, le tout filtré selon les permissions de l'utilisateur. Son illustration
-(`static/images/hero-pharmacie.svg`) est un visuel original représentant la traçabilité des
-lots et les indicateurs ; elle remplace l'ancien bloc « Références visuelles du cahier des
-charges » qui se trouvait à côté des alertes de stock.
+en attente, le tout filtré selon les permissions de l'utilisateur. La photo d'accueil
+(`static/images/maquettes/couverture.jpg`) est conservée à côté du titre principal ; l'ancien
+bloc « Références visuelles du cahier des charges » qui se trouvait à côté des alertes de stock
+a, lui, été supprimé.
 
+Un bouton **Retour** est disponible sur toutes les pages (dans la barre supérieure pour les
+pages connectées, au-dessus du formulaire pour les pages publiques) : il revient à la page
+précédente et replie sur l'accueil en l'absence d'historique.
+
+La page de connexion utilise une illustration originale (`static/images/hero-pharmacie.svg`),
+un formulaire avec autocomplétion et icônes de champ, et un accès balisé « mot de passe oublié ».
 Les maquettes extraites du cahier restent archivées dans `static/images/maquettes/` comme
-références de conception ; l'une d'elles est utilisée sur l'écran de connexion. Les
-illustrations de `static/images/medicaments/` sont des visuels de démonstration : dès qu'une
-photo réelle est téléversée sur un médicament, c'est elle qui est affichée.
+références de conception. Les illustrations de `static/images/medicaments/` sont des visuels
+de démonstration : dès qu'une photo réelle est téléversée sur un médicament, c'est elle qui est
+affichée.
