@@ -2,40 +2,43 @@
 {% load static %}
 {% block title %}Connexion — PharmaGest{% endblock %}
 {% block content %}
-<div class="auth-wrap reveal">
-  <div class="auth-art">
-    <img src="{% static 'images/hero-pharmacie.svg' %}" alt="Illustration PharmaGest : traçabilité des lots et indicateurs">
-    <div class="auth-art-content">
-      <h2>Votre pharmacie, sous contrôle.</h2>
-      <p>Pilotez vos stocks, vos lots, vos ventes et vos rapports depuis un espace unique, sécurisé et entièrement tracé.</p>
+<div class="social-login reveal">
+  <section class="social-intro">
+    <a class="social-wordmark" href="{% url 'home' %}">Pharma<span>Gest</span></a>
+    <h2>Votre officine, connectée à l'essentiel.</h2>
+    <p>Stocks, lots, ventes et rapports : toute l'équipe pharmacie travaille dans un seul espace, avec des accès tracés et une rotation FEFO maîtrisée.</p>
+    <div class="social-avatars" aria-hidden="true">
+      <span class="social-avatar" title="Pharmacien responsable"><svg class="ico"><use href="#i-pill"/></svg></span>
+      <span class="social-avatar" title="Gestion des stocks"><svg class="ico"><use href="#i-box"/></svg></span>
+      <span class="social-avatar" title="Caisse"><svg class="ico"><use href="#i-cash"/></svg></span>
+      <span class="social-avatar" title="Rapports"><svg class="ico"><use href="#i-chart"/></svg></span>
     </div>
-  </div>
-  <div class="auth-panel">
-    <img class="auth-panel-logo" src="{% static 'images/logo.svg' %}" alt="PharmaGest">
-    <span class="eyebrow">Espace sécurisé</span>
+    <p class="social-intro-foot">Pharmacien, caisse, stock : chacun son accès, tous la même vue.</p>
+  </section>
+
+  <section class="social-card">
+    <img class="social-card-logo" src="{% static 'images/logo.svg' %}" alt="PharmaGest">
     <h1>Connexion</h1>
-    <p class="lead">Identifiez-vous pour accéder à votre espace de gestion.</p>
+    <p class="social-card-sub">Accédez à votre espace de gestion officinale.</p>
     <form method="post">
       {% csrf_token %}
       {% for field in form %}
-        <div class="mb-3">
+        <div class="social-field">
           <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-          <div class="auth-input">
-            <svg class="ico"><use href="#i-{% if field.name == 'password' %}lock{% else %}users{% endif %}"/></svg>
-            {{ field }}
-          </div>
+          {{ field }}
+          {% if field.name == 'password' %}
+            <a class="social-forgot" href="{% url 'utilisateurs:password_reset' %}">Mot de passe oublié ?</a>
+          {% endif %}
           {{ field.errors }}
         </div>
       {% endfor %}
       {{ form.non_field_errors }}
-      <button class="btn btn-primary" type="submit">Se connecter <svg class="ico" style="width:16px;height:16px;display:inline;vertical-align:-3px"><use href="#i-arrow"/></svg></button>
+      <button class="btn btn-primary social-btn" type="submit">Se connecter</button>
     </form>
-    <p class="auth-security"><svg class="ico"><use href="#i-shield"/></svg> Espace réservé au personnel habilité — accès tracés.</p>
-    <p class="auth-foot">
-      <a href="{% url 'utilisateurs:password_reset' %}">Mot de passe oublié ?</a>
-      <span class="auth-sep">·</span>
-      <a href="{% url 'utilisateurs:inscription' %}">Créer un compte</a>
-    </p>
-  </div>
+    <div class="social-divider"><span>ou</span></div>
+    <a class="btn social-btn social-btn-create" href="{% url 'utilisateurs:inscription' %}">Créer un compte</a>
+    <p class="social-security"><svg class="ico"><use href="#i-shield"/></svg> Espace réservé au personnel habilité — accès tracés.</p>
+  </section>
 </div>
+<p class="social-page-foot">Vous gérez une officine ? <a href="{% url 'utilisateurs:inscription' %}">Créez un espace pharmacie pour votre équipe.</a></p>
 {% endblock %}

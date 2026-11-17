@@ -11,15 +11,16 @@ class ConnexionInterfaceTests(BaseTestCase):
         reponse = self.client.get(reverse('utilisateurs:login'))
         self.assertEqual(reponse.status_code, 200)
         contenu = reponse.content.decode()
-        self.assertIn('images/hero-pharmacie.svg', contenu)
+        # Direction « réseau social pharmaceutique » : logotype, cartes et avatars de rôles.
+        self.assertIn('social-wordmark', contenu)
+        self.assertIn('social-card', contenu)
+        self.assertIn('social-avatars', contenu)
         self.assertIn('placeholder="Votre identifiant"', contenu)
         self.assertIn('placeholder="Votre mot de passe"', contenu)
         self.assertIn('Espace réservé au personnel habilité', contenu)
         self.assertIn('Mot de passe oublié', contenu)
         self.assertIn('Créer un compte', contenu)
         self.assertIn('data-retour', contenu)
-        # Le formulaire est centré dans une carte étroite.
-        self.assertIn('auth-wrap', contenu)
 
     def test_connexion_avec_un_compte_demo_redirige_vers_l_accueil(self):
         Fabrique.utilisateur('admin-connexion', 'administrateur')

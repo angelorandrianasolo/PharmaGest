@@ -4,30 +4,33 @@
 {% block page_title %}Modifier mon profil{% endblock %}
 {% block page_subtitle %}Confirmation du mot de passe requise{% endblock %}
 {% block content %}
-<div class="page-head reveal">
-  <div>
-    <span class="eyebrow">Espace personnel</span>
-    <h1>Modifier mon profil</h1>
-    <p>Toute modification est confirmée par votre mot de passe actuel.</p>
-  </div>
-</div>
-<div class="card reveal" style="max-width: 720px;">
+<div class="card reveal profile-social" style="max-width: 760px;">
   <div class="card-body">
-    {% if user.photo %}
-      <div class="mb-3"><img class="profile-photo" src="{{ user.photo.url }}" alt="Photo actuelle"></div>
-    {% endif %}
+    <div class="profile-edit-head">
+      {% if user.photo %}
+        <img class="profile-photo" src="{{ user.photo.url }}" alt="Photo actuelle">
+      {% else %}
+        <div class="profile-avatar">{{ user.get_full_name|default:user.username|first|upper }}</div>
+      {% endif %}
+      <div>
+        <h1 style="margin:0;font-size:1.4rem;">Modifier le profil</h1>
+        <p>{{ user.get_full_name|default:user.username }} · {{ user.get_role_display }}</p>
+      </div>
+    </div>
     <form method="post" enctype="multipart/form-data" novalidate>
       {% csrf_token %}
       {% for field in form %}
-        <div class="mb-3">
+        {% if field.name == 'mot_de_passe' %}<div class="social-confirm">{% endif %}
+        <div class="social-field">
           <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
           {{ field }}
           {% if field.help_text %}<small class="form-text text-muted">{{ field.help_text }}</small>{% endif %}
           {{ field.errors }}
         </div>
+        {% if field.name == 'mot_de_passe' %}</div>{% endif %}
       {% endfor %}
       {{ form.non_field_errors }}
-      <div class="d-flex flex-wrap gap-2">
+      <div class="d-flex flex-wrap gap-2 mt-3">
         <button class="btn btn-primary" type="submit">Enregistrer les modifications</button>
         <a class="btn btn-outline-secondary" href="{% url 'utilisateurs:profil' %}">Annuler</a>
       </div>

@@ -61,7 +61,7 @@ class InscriptionTests(BaseTestCase):
     def test_page_inscription_est_publique(self):
         reponse = self.client.get(reverse('utilisateurs:inscription'))
         self.assertEqual(reponse.status_code, 200)
-        self.assertIn('Inscription', reponse.content.decode())
+        self.assertIn('Créer un compte', reponse.content.decode())
 
 
 class ProfilTests(BaseTestCase):
@@ -89,6 +89,15 @@ class ProfilTests(BaseTestCase):
         ):
             with self.subTest(valeur=valeur):
                 self.assertIn(valeur, contenu)
+
+    def test_profil_avec_couverture_avatar_et_onglets(self):
+        contenu = self.client.get(reverse('utilisateurs:profil')).content.decode()
+        for element in (
+            'profile-cover', 'profile-avatar', 'profile-tabs',
+            '#a-propos', '#photos', '#securite', 'Modifier le profil',
+        ):
+            with self.subTest(element=element):
+                self.assertIn(element, contenu)
 
     def test_modification_profil_sans_confirmation_est_refusee(self):
         reponse = self.client.post(

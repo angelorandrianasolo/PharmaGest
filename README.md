@@ -13,7 +13,7 @@ Fonctionnalités principales :
 - tableau de bord, alertes de rupture/péremption et documents **PDF ReportLab** ;
 - rôles et permissions, journal d'audit, sauvegarde/restauration ;
 - inscription publique (compte à activer), profil consultable et modifiable avec photo de profil et confirmation du mot de passe ;
-- jeu de données fictives et 59 tests automatisés.
+- jeu de données fictives et 60 tests automatisés.
 
 ---
 
@@ -75,7 +75,7 @@ nécessite également cette confirmation.
 # Vérification du projet
 docker compose run --rm web python manage.py check
 
-# Tests automatisés (59 tests)
+# Tests automatisés (60 tests)
 docker compose run --rm web python manage.py test
 
 # Contrôle de cohérence stock <> mouvements
@@ -221,11 +221,16 @@ Un bouton **Retour** est disponible sur toutes les pages (dans la barre supérie
 pages connectées, au-dessus du formulaire pour les pages publiques) : il revient à la page
 précédente et replie sur l'accueil en l'absence d'historique.
 
-La page de connexion est une carte centrée : illustration originale en bandeau
-(`static/images/hero-pharmacie.svg`), formulaire avec autocomplétion et icônes de champ, accès
-balisé « mot de passe oublié » et lien vers l'inscription. Les pages d'inscription reprennent la
-même présentation centrée. Le menu latéral propose les entrées **Accueil** et **Mon profil**, et un
-visiteur non connecté est systématiquement redirigé vers la connexion.
+Les écrans publics adoptent une composition inspirée des réseaux sociaux, réinterprétée pour
+une officine : grand logotype PharmaGest, accroche, pastilles représentant les métiers de la
+pharmacie et carte blanche flottante sur un fond gris-vert quadrillé. La connexion propose le
+formulaire, le lien « mot de passe oublié » et un bouton « Créer un compte » ; l'inscription
+reprend exactement cette grammaire visuelle.
+
+La page **Mon profil** suit le même langage : couverture dégradée verte, avatar circulaire,
+nom et rôle, onglets **À propos / Photos / Sécurité**, cartes d'informations et gestion de la
+photo. Le menu latéral propose les entrées **Accueil** et **Mon profil**, et un visiteur non
+connecté est systématiquement redirigé vers la connexion.
 
 Les maquettes extraites du cahier restent archivées dans `static/images/maquettes/` comme
 références de conception. Les illustrations de `static/images/medicaments/` sont des visuels
