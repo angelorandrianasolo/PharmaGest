@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="PharmaGest">
+  <rect x="2" y="2" width="60" height="60" rx="18" fill="#0F3B35"/>
+  <path d="M27 11h10v16h16v10H37v16H27V37H11V27h16z" fill="#F7F2E6"/>
+  <circle cx="50" cy="14" r="5" fill="#E0A04B"/>
+  <path d="M12 52c6-1 10-5 11-11-6 0-10 4-11 11z" fill="#63B593"/>
+</svg>

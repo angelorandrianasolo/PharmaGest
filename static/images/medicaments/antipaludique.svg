@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" role="img" aria-label="Boîte de médicament">
+  <rect width="400" height="400" fill="#F4F1E8"/>
+  <circle cx="320" cy="86" r="94" fill="#DCEAE4" opacity=".8"/>
+  <ellipse cx="200" cy="322" rx="128" ry="17" fill="#0F3B35" opacity=".10"/>
+  <g transform="rotate(-4 200 200)">
+    <rect x="112" y="86" width="176" height="228" rx="10" fill="#0F5F56"/>
+    <path d="M112 86h176v54H112z" fill="#14796C"/>
+    <path d="M112 260h176v54H112z" fill="#0C4B44"/>
+    <rect x="136" y="112" width="46" height="8" rx="4" fill="#F7F2E6" opacity=".9"/>
+    <rect x="136" y="130" width="84" height="6" rx="3" fill="#F7F2E6" opacity=".55"/>
+    <path d="M182 166h30v22h22v30h-22v22h-30v-22h-22v-30h22z" fill="#E0A04B"/>
+    <rect x="136" y="268" width="104" height="7" rx="3.5" fill="#F7F2E6" opacity=".65"/>
+    <rect x="136" y="286" width="70" height="5" rx="2.5" fill="#F7F2E6" opacity=".4"/>
+    <path d="M120 96h8v210h-8z" fill="#FFFFFF" opacity=".08"/>
+  </g>
+</svg>

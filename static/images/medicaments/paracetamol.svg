@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" role="img" aria-label="Plaquette de comprimés">
+  <rect width="400" height="400" fill="#F4F1E8"/>
+  <circle cx="330" cy="70" r="86" fill="#E7EFEA" opacity=".7"/>
+  <ellipse cx="200" cy="318" rx="130" ry="18" fill="#0F3B35" opacity=".10"/>
+  <g transform="rotate(-7 200 210)">
+    <rect x="72" y="118" width="256" height="184" rx="18" fill="#FFFFFF" stroke="#D5DCD8" stroke-width="3"/>
+    <path d="M90 118h220a18 18 0 0 1 18 18v22H72v-22a18 18 0 0 1 18-18z" fill="#14796C"/>
+    <rect x="96" y="130" width="70" height="7" rx="3.5" fill="#F7F2E6" opacity=".85"/>
+    <rect x="96" y="145" width="42" height="5" rx="2.5" fill="#F7F2E6" opacity=".55"/>
+    <g fill="#FCFCFA" stroke="#BFCBC6" stroke-width="2">
+      <circle cx="118" cy="190" r="20"/><circle cx="172" cy="190" r="20"/><circle cx="226" cy="190" r="20"/><circle cx="280" cy="190" r="20"/>
+      <circle cx="118" cy="248" r="20"/><circle cx="172" cy="248" r="20"/><circle cx="226" cy="248" r="20"/><circle cx="280" cy="248" r="20"/>
+    </g>
+    <g fill="#FFFFFF" opacity=".9">
+      <circle cx="112" cy="184" r="5"/><circle cx="166" cy="184" r="5"/><circle cx="220" cy="184" r="5"/><circle cx="274" cy="184" r="5"/>
+      <circle cx="112" cy="242" r="5"/><circle cx="166" cy="242" r="5"/><circle cx="220" cy="242" r="5"/><circle cx="274" cy="242" r="5"/>
+    </g>
+  </g>
+  <circle cx="334" cy="300" r="14" fill="#E0A04B" opacity=".9"/>
+</svg>
