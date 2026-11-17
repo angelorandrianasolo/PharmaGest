@@ -50,7 +50,6 @@
     <p class="nav-label">Navigation</p>
     <nav class="side-nav" aria-label="Menu principal">
       <a class="nav-item-app {% if request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'home' %}"><svg class="ico"><use href="#i-home"/></svg>Accueil</a>
-      <a class="nav-item-app {% if request.resolver_match.url_name == 'profil' or request.resolver_match.url_name == 'profil_modifier' or request.resolver_match.url_name == 'password_change' %}active{% endif %}" href="{% url 'utilisateurs:profil' %}"><svg class="ico"><use href="#i-users"/></svg>Mon profil</a>
       {% if perms.ventes.consulter_rapports %}
       <a class="nav-item-app {% if request.resolver_match.namespace == 'rapports' %}active{% endif %}" href="{% url 'rapports:dashboard' %}"><svg class="ico"><use href="#i-grid"/></svg>Tableau de bord</a>
       {% endif %}
@@ -81,10 +80,11 @@
     </nav>
 
     <div class="sidebar-foot">
-      <div class="user-card">
+      <a class="user-card" href="{% url 'utilisateurs:profil' %}" title="Modifier mon profil">
         <div class="avatar">{{ user.get_full_name|default:user.username|first|upper }}</div>
         <div><strong>{{ user.get_full_name|default:user.username }}</strong><small>{{ user.get_role_display }}</small></div>
-      </div>
+        <svg class="ico"><use href="#i-arrow"/></svg>
+      </a>
       <form method="post" action="{% url 'utilisateurs:logout' %}">
         {% csrf_token %}
         <button class="logout-btn" type="submit"><svg class="ico"><use href="#i-logout"/></svg>Déconnexion</button>

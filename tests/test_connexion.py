@@ -11,10 +11,10 @@ class ConnexionInterfaceTests(BaseTestCase):
         reponse = self.client.get(reverse('utilisateurs:login'))
         self.assertEqual(reponse.status_code, 200)
         contenu = reponse.content.decode()
-        # Direction « réseau social pharmaceutique » : logotype, cartes et avatars de rôles.
-        self.assertIn('social-wordmark', contenu)
-        self.assertIn('social-card', contenu)
-        self.assertIn('social-avatars', contenu)
+        # Carte de connexion centrée, sans élément de réseau social.
+        self.assertIn('auth-card', contenu)
+        self.assertNotIn('social-wordmark', contenu)
+        self.assertNotIn('social-avatars', contenu)
         self.assertIn('placeholder="Votre identifiant"', contenu)
         self.assertIn('placeholder="Votre mot de passe"', contenu)
         self.assertIn('Espace réservé au personnel habilité', contenu)

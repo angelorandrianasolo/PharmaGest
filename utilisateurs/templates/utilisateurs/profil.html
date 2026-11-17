@@ -2,104 +2,40 @@
 {% load static %}
 {% block title %}Mon profil — PharmaGest{% endblock %}
 {% block page_title %}Mon profil{% endblock %}
-{% block page_subtitle %}Identité, coordonnées et sécurité du compte{% endblock %}
+{% block page_subtitle %}Modification des informations personnelles{% endblock %}
 {% block content %}
-<div class="profile-social reveal">
-  <div class="profile-cover">
-    <span class="profile-cover-label"><svg class="ico"><use href="#i-shield"/></svg> Espace personnel · PharmaGest</span>
-  </div>
-
-  <div class="profile-identity">
-    {% if user.photo %}
-      <img class="profile-photo" src="{{ user.photo.url }}" alt="Photo de profil de {{ user.get_full_name|default:user.username }}">
-    {% else %}
-      <div class="profile-avatar">{{ user.get_full_name|default:user.username|first|upper }}</div>
-    {% endif %}
-    <div class="profile-identity-main">
-      <h1>{{ user.get_full_name|default:user.username }}</h1>
-      <p class="profile-headline">
-        <span class="badge bg-primary-subtle text-primary">{{ user.get_role_display }}</span>
-        {% if user.is_active %}· Compte actif{% else %}· Compte inactif{% endif %}
-      </p>
-      <p class="profile-meta">Identifiant : {{ user.username }} · Membre depuis le {{ user.date_joined|date:'d/m/Y' }}</p>
-    </div>
-    <div class="profile-identity-actions">
-      <a class="btn btn-primary" href="{% url 'utilisateurs:profil_modifier' %}">Modifier le profil</a>
-      <a class="btn btn-outline-primary" href="{% url 'utilisateurs:password_change' %}">Changer le mot de passe</a>
-    </div>
-  </div>
-
-  <nav class="profile-tabs" aria-label="Sections du profil">
-    <a class="active" href="#a-propos">À propos</a>
-    <a href="#photos">Photos</a>
-    <a href="#securite">Sécurité</a>
-  </nav>
-
-  <div class="row g-3">
-    <div class="col-lg-4" id="a-propos">
-      <div class="card">
-        <div class="card-header"><svg class="ico"><use href="#i-users"/></svg> À propos</div>
-        <div class="card-body profile-about-list">
-          <div class="profile-fact"><span class="profile-fact-ico"><svg class="ico"><use href="#i-users"/></svg></span><div><small>Nom complet</small><strong>{{ user.get_full_name|default:'Non renseigné' }}</strong></div></div>
-          <div class="profile-fact"><span class="profile-fact-ico"><svg class="ico"><use href="#i-pill"/></svg></span><div><small>Identifiant</small><strong>{{ user.username }}</strong></div></div>
-          <div class="profile-fact"><span class="profile-fact-ico"><svg class="ico"><use href="#i-file"/></svg></span><div><small>Adresse e-mail</small><strong>{{ user.email|default:'Non renseignée' }}</strong></div></div>
-          <div class="profile-fact"><span class="profile-fact-ico"><svg class="ico"><use href="#i-cash"/></svg></span><div><small>Téléphone</small><strong>{{ user.telephone|default:'Non renseigné' }}</strong></div></div>
-          <div class="profile-fact"><span class="profile-fact-ico"><svg class="ico"><use href="#i-shield"/></svg></span><div><small>Rôle principal</small><strong>{{ user.get_role_display }}</strong></div></div>
-          <div class="profile-fact"><span class="profile-fact-ico"><svg class="ico"><use href="#i-clock"/></svg></span><div><small>Membre depuis</small><strong>{{ user.date_joined|date:'d/m/Y' }}</strong></div></div>
-        </div>
+<div class="card profile-form-card reveal">
+  <div class="card-body">
+    <div class="profile-form-head">
+      {% if user.photo %}
+        <img class="profile-photo-mini" src="{{ user.photo.url }}" alt="Photo actuelle">
+      {% else %}
+        <div class="profile-avatar-mini">{{ user.get_full_name|default:user.username|first|upper }}</div>
+      {% endif %}
+      <div>
+        <h1>Modifier mes informations</h1>
+        <p>{{ user.username }} · Toute modification est confirmée par votre mot de passe actuel.</p>
       </div>
     </div>
 
-    <div class="col-lg-8">
-      <div class="card" id="photos">
-        <div class="card-header"><svg class="ico"><use href="#i-pill"/></svg> Photos</div>
-        <div class="card-body">
-          <div class="profile-photo-grid">
-            <div class="profile-photo-tile">
-              {% if user.photo %}
-                <img src="{{ user.photo.url }}" alt="Votre photo de profil">
-              {% else %}
-                <svg class="ico" title="Ajoutez votre photo"><use href="#i-spark"/></svg>
-              {% endif %}
-            </div>
-            <div class="profile-photo-tile" title="Identité vérifiée"><svg class="ico"><use href="#i-shield"/></svg></div>
-            <div class="profile-photo-tile" title="Espace pharmacie"><svg class="ico"><use href="#i-pill"/></svg></div>
-          </div>
-          <div class="profile-photo-actions">
-            <a class="btn btn-outline-primary" href="{% url 'utilisateurs:profil_modifier' %}">Modifier ma photo</a>
-            <form method="post" action="{% url 'utilisateurs:photo_supprimer' %}" class="d-flex flex-wrap align-items-end gap-2 flex-grow-1">
-              {% csrf_token %}
-              <div class="social-field mb-0 flex-grow-1">
-                <label class="form-label" for="{{ form_suppression_photo.mot_de_passe.id_for_label }}">{{ form_suppression_photo.mot_de_passe.label }}</label>
-                {{ form_suppression_photo.mot_de_passe }}
-                {{ form_suppression_photo.mot_de_passe.errors }}
-              </div>
-              <button class="btn btn-outline-danger" type="submit" {% if not user.photo %}disabled{% endif %}>Supprimer la photo</button>
-            </form>
-          </div>
-          <p class="text-muted small mt-2 mb-0">La suppression de la photo nécessite la confirmation de votre mot de passe.</p>
+    <form method="post" action="{% url 'utilisateurs:profil_modifier' %}" enctype="multipart/form-data" novalidate>
+      {% csrf_token %}
+      {% for field in form %}
+        {% if field.name == 'mot_de_passe' %}<div class="confirm-panel">{% endif %}
+        <div class="auth-field">
+          <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+          {% if field.help_text %}<small class="form-text text-muted">{{ field.help_text }}</small>{% endif %}
+          {{ field.errors }}
         </div>
+        {% if field.name == 'mot_de_passe' %}</div>{% endif %}
+      {% endfor %}
+      {{ form.non_field_errors }}
+      <div class="profile-form-actions">
+        <button class="btn btn-primary" type="submit">Enregistrer les modifications</button>
+        <a class="btn btn-link" href="{% url 'utilisateurs:password_change' %}">Changer le mot de passe</a>
       </div>
-
-      <div class="card mt-3" id="securite">
-        <div class="card-header"><svg class="ico"><use href="#i-lock"/></svg> Sécurité</div>
-        <div class="card-body">
-          <div class="profile-security-row">
-            <div>
-              <strong>Mot de passe</strong>
-              <p>Protégé — jamais affiché. Le changement exige votre mot de passe actuel.</p>
-            </div>
-            <a class="btn btn-outline-primary" href="{% url 'utilisateurs:password_change' %}">Changer le mot de passe</a>
-          </div>
-          <div class="profile-security-row" style="border-bottom:0;">
-            <div>
-              <strong>Statut du compte</strong>
-              <p>{% if user.is_active %}Actif — accès autorisé selon vos habilitations.{% else %}Inactif — accès suspendu.{% endif %}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    </form>
   </div>
 </div>
 {% endblock %}

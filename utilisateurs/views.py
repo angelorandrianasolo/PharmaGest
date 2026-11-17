@@ -103,14 +103,14 @@ class ReinitialisationTermineeView(PasswordResetCompleteView):
 
 
 class ProfilView(LoginRequiredMixin, TemplateView):
-    """Consultation du profil de l'utilisateur connecté."""
+    """Affiche les seules informations du compte que l'utilisateur peut modifier."""
 
     template_name = "utilisateurs/profil.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["form_suppression_photo"] = SuppressionPhotoForm(
-            utilisateur=self.request.user
+        context["form"] = ProfilForm(
+            instance=self.request.user, utilisateur=self.request.user
         )
         return context
 
@@ -120,7 +120,7 @@ class ProfilModificationView(LoginRequiredMixin, UpdateView):
 
     model = Utilisateur
     form_class = ProfilForm
-    template_name = "utilisateurs/profil_form.html"
+    template_name = "utilisateurs/profil.html"
     success_url = reverse_lazy("utilisateurs:profil")
 
     def get_object(self, queryset=None):

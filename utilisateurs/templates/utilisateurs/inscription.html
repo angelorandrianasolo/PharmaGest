@@ -2,40 +2,24 @@
 {% load static %}
 {% block title %}Créer un compte — PharmaGest{% endblock %}
 {% block content %}
-<div class="social-login reveal">
-  <section class="social-intro">
-    <a class="social-wordmark" href="{% url 'home' %}">Pharma<span>Gest</span></a>
-    <h2>Rejoignez votre pharmacie, en toute confiance.</h2>
-    <p>Créez votre compte pour consulter le catalogue. Un administrateur l'active ensuite et lui attribue les accès adaptés à votre fonction.</p>
-    <div class="social-avatars" aria-hidden="true">
-      <span class="social-avatar" title="Pharmacien responsable"><svg class="ico"><use href="#i-pill"/></svg></span>
-      <span class="social-avatar" title="Gestion des stocks"><svg class="ico"><use href="#i-box"/></svg></span>
-      <span class="social-avatar" title="Caisse"><svg class="ico"><use href="#i-cash"/></svg></span>
-      <span class="social-avatar" title="Rapports"><svg class="ico"><use href="#i-chart"/></svg></span>
-    </div>
-    <p class="social-intro-foot">Un espace unique pour toute l'équipe officinale.</p>
-  </section>
-
-  <section class="social-card">
-    <img class="social-card-logo" src="{% static 'images/logo.svg' %}" alt="PharmaGest">
-    <h1>Créer un compte</h1>
-    <p class="social-card-sub">Renseignez vos informations pour demander un accès.</p>
-    <form method="post" novalidate>
-      {% csrf_token %}
-      {% for field in form %}
-        <div class="social-field">
-          <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-          {{ field }}
-          {% if field.help_text %}<small class="form-text text-muted">{{ field.help_text }}</small>{% endif %}
-          {{ field.errors }}
-        </div>
-      {% endfor %}
-      {{ form.non_field_errors }}
-      <button class="btn btn-primary social-btn" type="submit">Créer mon compte</button>
-    </form>
-    <div class="social-divider"><span>ou</span></div>
-    <a class="btn social-btn social-btn-create" href="{% url 'utilisateurs:login' %}">Se connecter</a>
-    <p class="social-security"><svg class="ico"><use href="#i-shield"/></svg> Compte soumis à validation administrative avant activation.</p>
-  </section>
+<div class="auth-card reveal">
+  <img class="auth-card-logo" src="{% static 'images/logo.svg' %}" alt="PharmaGest">
+  <h1>Créer un compte</h1>
+  <p class="auth-card-sub">Renseignez vos informations pour demander un accès.</p>
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {% for field in form %}
+      <div class="auth-field">
+        <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% if field.help_text %}<small class="form-text text-muted">{{ field.help_text }}</small>{% endif %}
+        {{ field.errors }}
+      </div>
+    {% endfor %}
+    {{ form.non_field_errors }}
+    <button class="btn btn-primary auth-btn" type="submit">Créer mon compte</button>
+  </form>
+  <p class="auth-security"><svg class="ico"><use href="#i-shield"/></svg> Compte soumis à validation administrative avant activation.</p>
+  <p class="auth-foot">Déjà inscrit ? <a href="{% url 'utilisateurs:login' %}">Se connecter</a></p>
 </div>
 {% endblock %}

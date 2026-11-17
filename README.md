@@ -13,7 +13,7 @@ Fonctionnalités principales :
 - tableau de bord, alertes de rupture/péremption et documents **PDF ReportLab** ;
 - rôles et permissions, journal d'audit, sauvegarde/restauration ;
 - inscription publique (compte à activer), profil consultable et modifiable avec photo de profil et confirmation du mot de passe ;
-- jeu de données fictives et 60 tests automatisés.
+- jeu de données fictives et 61 tests automatisés.
 
 ---
 
@@ -64,10 +64,11 @@ créé avec le rôle **Utilisateur inscrit** (lecture du catalogue) et reste ina
 activation par un administrateur dans `Utilisateurs`. Le réglage `INSCRIPTION_ACTIVATION_AUTO=True`
 permet de l'activer immédiatement (démonstration uniquement).
 
-Chaque utilisateur dispose d'une page **Mon profil** (menu latéral) : consultation de son identité,
-de ses coordonnées et de son rôle, modification des informations et de la photo de profil après
-confirmation du mot de passe actuel, et changement de mot de passe dédié. La suppression de la photo
-nécessite également cette confirmation.
+Le profil s'ouvre en cliquant sur la carte utilisateur en bas de la barre latérale (pas d'entrée
+supplémentaire dans le menu). Cette page ne présente que les informations modifiables : photo,
+prénom, nom, adresse e-mail et téléphone, avec une case pour supprimer la photo. Tout enregistrement
+est conditionné à la confirmation du mot de passe actuel ; le changement de mot de passe dispose de
+sa propre page.
 
 ## 3. Commandes courantes
 
@@ -75,7 +76,7 @@ nécessite également cette confirmation.
 # Vérification du projet
 docker compose run --rm web python manage.py check
 
-# Tests automatisés (60 tests)
+# Tests automatisés (61 tests)
 docker compose run --rm web python manage.py test
 
 # Contrôle de cohérence stock <> mouvements
@@ -221,16 +222,13 @@ Un bouton **Retour** est disponible sur toutes les pages (dans la barre supérie
 pages connectées, au-dessus du formulaire pour les pages publiques) : il revient à la page
 précédente et replie sur l'accueil en l'absence d'historique.
 
-Les écrans publics adoptent une composition inspirée des réseaux sociaux, réinterprétée pour
-une officine : grand logotype PharmaGest, accroche, pastilles représentant les métiers de la
-pharmacie et carte blanche flottante sur un fond gris-vert quadrillé. La connexion propose le
-formulaire, le lien « mot de passe oublié » et un bouton « Créer un compte » ; l'inscription
-reprend exactement cette grammaire visuelle.
+Les écrans publics (connexion, inscription, confirmation) utilisent une carte centrée et sobre :
+logo, titre, champs avec icônes pour la connexion, accès « mot de passe oublié » et lien vers
+l'inscription. Aucune mise en page inspirée d'un réseau social n'est utilisée.
 
-La page **Mon profil** suit le même langage : couverture dégradée verte, avatar circulaire,
-nom et rôle, onglets **À propos / Photos / Sécurité**, cartes d'informations et gestion de la
-photo. Le menu latéral propose les entrées **Accueil** et **Mon profil**, et un visiteur non
-connecté est systématiquement redirigé vers la connexion.
+La page de profil est un formulaire unique centré sur les seules données modifiables ; le bouton
+de retour et la navigation latérale restent inchangés. Un visiteur non connecté est
+systématiquement redirigé vers la connexion.
 
 Les maquettes extraites du cahier restent archivées dans `static/images/maquettes/` comme
 références de conception. Les illustrations de `static/images/medicaments/` sont des visuels

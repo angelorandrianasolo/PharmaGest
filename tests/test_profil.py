@@ -79,25 +79,29 @@ class ProfilTests(BaseTestCase):
                 self.assertEqual(reponse.status_code, 302)
                 self.assertIn(reverse('utilisateurs:login'), reponse['Location'])
 
-    def test_profil_affiche_les_informations_du_compte(self):
+    def test_profil_affiche_uniquement_les_champs_modifiables(self):
         reponse = self.client.get(reverse('utilisateurs:profil'))
         self.assertEqual(reponse.status_code, 200)
         contenu = reponse.content.decode()
         for valeur in (
-            'profil-user', 'ancien@example.mg', 'Pharmacien responsable',
-            'Mot de passe', 'Changer le mot de passe',
+            'ancien@example.mg', 'Supprimer ma photo actuelle',
+            'Mot de passe actuel (confirmation)', 'Changer le mot de passe',
+            'Enregistrer les modifications',
         ):
             with self.subTest(valeur=valeur):
                 self.assertIn(valeur, contenu)
+        # Aucune présentation « réseau social » ni information non modifiable.
+        for absent in ('profile-cover', 'profile-tabs', 'À propos'):
+            with self.subTest(absent=absent):
+                self.assertNotIn(absent, contenu)
 
-    def test_profil_avec_couverture_avatar_et_onglets(self):
-        contenu = self.client.get(reverse('utilisateurs:profil')).content.decode()
-        for element in (
-            'profile-cover', 'profile-avatar', 'profile-tabs',
-            '#a-propos', '#photos', '#securite', 'Modifier le profil',
-        ):
-            with self.subTest(element=element):
-                self.assertIn(element, contenu)
+    def test_acces_au_profil_par_la_carte_utilisateur(self):
+        contenu = self.client.get(reverse('home')).content.decode()
+        self.assertIn(
+            'class="user-card" href="' + reverse('utilisateurs:profil') + '"',
+            contenu,
+        )
+        self.assertNotIn('Mon profil</a>', contenu)
 
     def test_modification_profil_sans_confirmation_est_refusee(self):
         reponse = self.client.post(
@@ -148,19 +152,36 @@ class ProfilTests(BaseTestCase):
         self.utilisateur.refresh_from_db()
         self.assertTrue(self.utilisateur.photo.name.startswith('profils/'))
 
+    def _mettre_photo(self):
+        tampon = io.BytesIO()
+        Image.new('RGB', (16, 16), color=(20, 90, 75)).save(tampon, format='PNG')
+        self.utilisateur.photo.save(
+            'portrait.png',
+            SimpleUploadedFile('portrait.png', tampon.getvalue(), content_type='image/png'),
+            save=True,
+        )
+
+    def test_suppression_photo_depuis_le_profil_avec_confirmation(self):
+        self._mettre_photo()
+        reponse = self.client.post(
+            reverse('utilisateurs:profil_modifier'),
+            {'supprimer_photo': 'on', 'mot_de_passe': 'testpass123'},
+        )
+        self.assertRedirects(reponse, reverse('utilisateurs:profil'))
+        self.utilisateur.refresh_from_db()
+        self.assertFalse(self.utilisateur.photo)
+
     def test_suppression_photo_sans_confirmation_est_refusee(self):
-        self.utilisateur.photo = 'profils/portrait.png'
-        self.utilisateur.save(update_fields=['photo'])
+        self._mettre_photo()
         reponse = self.client.post(
             reverse('utilisateurs:photo_supprimer'), {'mot_de_passe': 'incorrect'}
         )
         self.assertRedirects(reponse, reverse('utilisateurs:profil'))
         self.utilisateur.refresh_from_db()
-        self.assertEqual(self.utilisateur.photo.name, 'profils/portrait.png')
+        self.assertTrue(self.utilisateur.photo.name)
 
     def test_suppression_photo_avec_confirmation(self):
-        self.utilisateur.photo = 'profils/portrait.png'
-        self.utilisateur.save(update_fields=['photo'])
+        self._mettre_photo()
         reponse = self.client.post(
             reverse('utilisateurs:photo_supprimer'), {'mot_de_passe': 'testpass123'}
         )

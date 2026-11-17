@@ -83,9 +83,24 @@ class InscriptionForm(BootstrapFormMixin, UserCreationForm):
 class ProfilForm(ConfirmationMotDePasseMixin, BootstrapFormMixin, forms.ModelForm):
     """Modification des informations personnelles, avec confirmation du mot de passe."""
 
+    supprimer_photo = forms.BooleanField(
+        label="Supprimer ma photo actuelle",
+        required=False,
+        help_text="Cochez cette case pour retirer votre photo de profil.",
+    )
+
     class Meta:
         model = Utilisateur
         fields = ("photo", "first_name", "last_name", "email", "telephone")
+
+    def save(self, commit=True):
+        utilisateur = super().save(commit=False)
+        if self.cleaned_data.get("supprimer_photo") and utilisateur.photo:
+            utilisateur.photo.delete(save=False)
+            utilisateur.photo = None
+        if commit:
+            utilisateur.save()
+        return utilisateur
 
 
 class SuppressionPhotoForm(ConfirmationMotDePasseMixin, forms.Form):
