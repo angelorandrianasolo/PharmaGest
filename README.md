@@ -1,7 +1,7 @@
 # PharmaGest
 
 Application web de gestion de pharmacie développée avec **Django 5.2**, conteneurisée avec
-**Docker Compose** et conforme au cahier des charges fourni (`Cahier des charges projet pharmacie.pdf`).
+**Docker Compose**.
 
 Fonctionnalités principales :
 
