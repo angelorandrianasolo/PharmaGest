@@ -13,7 +13,7 @@ Fonctionnalités principales :
 - tableau de bord, alertes de rupture/péremption et documents **PDF ReportLab** ;
 - rôles et permissions, journal d'audit, sauvegarde/restauration ;
 - inscription publique (compte à activer), profil consultable et modifiable avec photo de profil et confirmation du mot de passe ;
-- jeu de données fictives et 148 tests automatisés (au moins 10 par fonctionnalité).
+- jeu de données fictives et 151 tests automatisés (au moins 10 par fonctionnalité).
 
 ---
 
@@ -44,6 +44,12 @@ docker compose run --rm web python manage.py migrate --noinput
 docker compose run --rm web python manage.py setup_roles
 docker compose run --rm web python manage.py seed_demo
 ```
+
+Le jeu complet contient 62 médicaments, 14 catégories, 9 fournisseurs, 60 clients,
+30 commandes réceptionnées, 244 lots, environ 250 ventes, des retours, des
+annulations et un journal d'audit. Le remplissage est déterministe et idempotent
+(relancer la commande ne duplique rien). Pour un jeu réduit destiné aux tests :
+`python manage.py seed_demo --scale test`.
 
 L'application est alors disponible sur <http://localhost:8000>.
 
@@ -76,7 +82,7 @@ sa propre page.
 # Vérification du projet
 docker compose run --rm web python manage.py check
 
-# Tests automatisés (148 tests — au moins 10 par fonctionnalité)
+# Tests automatisés (151 tests — au moins 10 par fonctionnalité)
 docker compose run --rm web python manage.py test
 
 # Contrôle de cohérence stock <> mouvements
